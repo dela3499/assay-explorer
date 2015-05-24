@@ -6,6 +6,15 @@ import functools
 
 # TODO: improve the way that SEM is calculated and added to data
 
+def concatenate(x):
+    "Concatenate a sublists into single list."
+    if len(x) == 1:
+        return x[0]
+    elif len(x) == 2:
+        return x[0] + x[1]
+    else: 
+        return x[0] + x[1] + concatenate(x[2:])
+
 def compose(*funcs):
     def compose2(f1,f2):
         return lambda x: f2(f1(x))
