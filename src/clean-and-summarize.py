@@ -30,7 +30,7 @@ def summarize(df, col):
   summary = raw_summary \
               .reset_index(level = [0,1]) \
               .rename(columns={'level_1': 'Function'}) \
-              .append(get_sem_df(raw_summary).rename(columns={'Group':'Well Name'})) \
+              .append(get_sem_df(raw_summary).rename(columns={'Group':col})) \
               .sort([col,'Function'])
   summary = move_columns(summary,[[col,0],['Function',1]])
     
