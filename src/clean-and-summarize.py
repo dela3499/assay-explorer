@@ -27,6 +27,13 @@ data = move_column(pd.merge(cells,conds,on='Well Name'),
 def summarize(df, col):
   """ Return summary of data grouped by col. """
   raw_summary = df.groupby(col).describe()
+
+  # Add cell count column
+  if col == 'Condition': 
+    sizes = df.groupby('Well Name').size().reset_index().rename(columns={0:'Cell Count'})
+    counts = pd.merge(conds,sizes,on='Well Name').groupby('Condition').describe()
+    raw_summary = pd.merge(raw_summary,counts,left_index=True,right_index=True)   
+  
   summary = raw_summary \
               .reset_index(level = [0,1]) \
               .rename(columns={'level_1': 'Function'}) \
