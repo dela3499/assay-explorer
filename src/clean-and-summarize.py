@@ -11,7 +11,7 @@ cells_raw = pd.read_csv(cells_path,skiprows=4)
 conds_raw = pd.read_csv(conds_wells_path,skiprows=[1])
 
 # Drop unwanted columns and rename remaining ones
-cells = drop_unwanted_cols(cells_raw).rename(columns=rename_col)
+cells = drop_unwanted_cols(cells_raw.dropna(axis=1,how='all')).rename(columns=rename_col)
 conds = create_condition_lookup(conds_raw.dropna(axis=1,how='all'))
 
 # Check that no wells are listed more than once in table
