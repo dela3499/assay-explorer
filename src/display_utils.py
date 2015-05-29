@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn.apionly as sns
-# import seaborn as sns
 
 from scipy.cluster.hierarchy import linkage, leaves_list, dendrogram
 
@@ -30,7 +29,7 @@ def normalize_columns(df):
 
 # Need to improve this chunk of code. It's important, but difficult to read. 
 
-def plot_matrix_tree(matrix,xlink,ylink,xlabels,ylabels):
+def plot_matrix_tree(matrix,xlink,ylink,xlabels,ylabels,color):
     plt.figure(figsize=(20,10))
     plt.subplots_adjust(hspace=0,wspace=0)
     gs = gridspec.GridSpec(2, 1,height_ratios=[1,5]) 
@@ -43,13 +42,13 @@ def plot_matrix_tree(matrix,xlink,ylink,xlabels,ylabels):
     subplot_dendrogram(gs[0],xlink,'top')
     
     plt.subplot(gs[1])
-    plt.imshow(matrix,interpolation='nearest',cmap='Blues',aspect='auto');
+    plt.imshow(matrix,interpolation='nearest',cmap=color,aspect='auto');
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
     plt.xticks(range(len(xlabels)),xlabels,rotation=30,ha='right')
     plt.yticks(range(len(ylabels)),ylabels)
 
-def matrix_tree(data):
+def matrix_tree(data,color):
     normed_data = data.values
 
     condition_link = linkage(normed_data)
@@ -67,7 +66,8 @@ def matrix_tree(data):
                      condition_link,
                      feature_link,
                      conditions,
-                     features)
+                     features,
+                     color)
 
 def parse_condition(x):
     words = x.split(' ')
