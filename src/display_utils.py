@@ -32,16 +32,19 @@ def normalize_columns(df):
 def plot_matrix_tree(matrix,xlink,ylink,xlabels,ylabels,color):
     plt.figure(figsize=(20,10))
     plt.subplots_adjust(hspace=0,wspace=0)
-    gs = gridspec.GridSpec(2, 1,height_ratios=[1,5]) 
+    gs = gridspec.GridSpec(2, 2,height_ratios=[1,5],width_ratios=[5,1]) 
     
     def subplot_dendrogram(subplot,link,orientation):
         plt.subplot(subplot)
         dendrogram(link, orientation = orientation, link_color_func = lambda x: 'k')
         plt.axis('off')
+        if orientation == 'left':
+            plt.gca().invert_yaxis() # Need to flip dendrogram, since the default seems incorrect. 
 
     subplot_dendrogram(gs[0],xlink,'top')
+    subplot_dendrogram(gs[3],ylink,'left')
     
-    plt.subplot(gs[1])
+    plt.subplot(gs[2])
     plt.imshow(matrix,interpolation='nearest',cmap=color,aspect='auto');
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
