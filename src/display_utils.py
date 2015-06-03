@@ -168,4 +168,15 @@ def colorize(c):
     elif 'DMSO' in c:
         return (0.3,1,0.3)
     else:
-        raise Exception('Do not know how to color {}'.format(c))              
+        raise Exception('Do not know how to color {}'.format(c))
+
+def plot_plate(matrix,xlabels = [],ylabels = [],color = 'Blues'):
+    plt.figure(figsize=(20,10))
+    plt.imshow(matrix,interpolation='nearest',cmap=color,aspect='auto');
+    [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
+    
+    plt.xticks(range(len(xlabels)),xlabels,rotation=30,ha='right')
+    plt.yticks(range(len(ylabels)),ylabels)
+
+def plot_test(x,y=1):
+    print x,y
