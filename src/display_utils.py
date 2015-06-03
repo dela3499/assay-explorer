@@ -170,13 +170,44 @@ def colorize(c):
     else:
         raise Exception('Do not know how to color {}'.format(c))
 
-def plot_plate(matrix,xlabels = [],ylabels = [],color = 'Blues'):
-    plt.figure(figsize=(20,10))
+def to_plate_layout_matrix(data,col,function='mean'):
+    """ Return a matrix, given a DataFrame, a function to select, and a column to choose data from."""
+
+    def get_row(well_name):
+        raw_coords = re.match('([a-z]*)([0-9]*)',well_name,flags=re.IGNORECASE).groups()
+        return 'abcdefghijklmnopqrstuvwxyz'.index(raw_coords[0].lower())
+
+    def get_col(well_name):
+        raw_coords = re.match('([a-z]*)([0-9]*)',well_name,flags=re.IGNORECASE).groups()
+        return int(raw_coords[1]) - 1
+    
+    df = filter_rows(data,'Function',function).copy()
+    df['row'] = df['Well Name'].map(get_row)
+    df['column'] = df['Well Name'].map(get_col)
+    df['xy'] = df['row'].map(str) + df['row'].map(lambda x: ' - ') + df['column'].map(str)
+
+    df = df.sort(['row','column'])
+    
+    n_rows = df['row'].unique().size
+    n_cols = df['column'].unique().size
+
+    return np.reshape(df[col].values,[n_rows,n_cols])
+
+def plot_plate(data,parameter,function='mean',color = 'Blues',show_numbers = False):
+    matrix = to_plate_layout_matrix(data,parameter,function)
+    xlabels = np.arange(matrix.shape[1]) + 1
+    ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
+    plt.figure(figsize=(17,5))
     plt.imshow(matrix,interpolation='nearest',cmap=color,aspect='auto');
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
-    plt.xticks(range(len(xlabels)),xlabels,rotation=30,ha='right')
+    plt.xticks(range(len(xlabels)),xlabels)
     plt.yticks(range(len(ylabels)),ylabels)
-
-def plot_test(x,y=1):
-    print x,y
+    
+    if show_numbers: 
+        for y in range(matrix.shape[0]):
+            for x in range(matrix.shape[1]):
+                plt.text(x, y, '%.1f' % matrix[y, x],
+                         horizontalalignment='center',
+                         verticalalignment='center',
+                         ) 

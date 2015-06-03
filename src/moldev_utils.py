@@ -130,3 +130,6 @@ def get_sems(df):
 def get_sem_df(df):
     "Return new DataFrame with row containing standard error of mean for each condition."
     return pd.concat(get_sems(df), axis = 1).T
+
+def reverse(x):
+    return list(reversed(x))    

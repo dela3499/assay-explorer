@@ -23,33 +23,46 @@ assert len(conds['Well Name']) == len(conds['Well Name'].unique()), \
 data = move_column(pd.merge(cells,conds,on='Well Name'),
                    'Condition',1)
 
-# Create summaries (group by condition or well)
-def summarize(df, col):
-  """ Return summary of data grouped by col. """
-  raw_summary = df.groupby(col).describe()
+# Create summaries
+def summarize_conditions(df):
+  """ Return summary of data grouped by condition. """
+  raw_summary = df.groupby('Condition').describe()
 
   # Add cell count column
-  if col == 'Condition': 
-    sizes = df.groupby('Well Name').size().reset_index().rename(columns={0:'Cell Count'})
-    counts = pd.merge(conds,sizes,on='Well Name').groupby('Condition').describe()
-    raw_summary = pd.merge(raw_summary,counts,left_index=True,right_index=True)   
+  sizes = df.groupby('Well Name').size().reset_index().rename(columns={0:'Cell Count'})
+  counts = pd.merge(conds,sizes,on='Well Name').groupby('Condition').describe()
+  raw_summary = pd.merge(raw_summary,counts,left_index=True,right_index=True)
+
+  summary = raw_summary \
+              .reset_index(level = [0,1]) \
+              .rename(columns={'level_1': 'Function'}) \
+              .append(get_sem_df(raw_summary).rename(columns={'Group':'Condition'})) \
+              .sort(['Condition','Function'])
+  summary = move_columns(summary,[['Condition',0],['Function',1]])    
+  return summary
+
+def summarize_wells(df):
+  """ Return summary of data grouped by well. """
+  raw_summary = df.groupby('Well Name').describe()
+
+  # Add cell count column
+  counts = df.groupby('Well Name').size().reset_index().rename(columns={0:'Cell Count'})
+  counts['Function'] = 'mean'
   
   summary = raw_summary \
               .reset_index(level = [0,1]) \
               .rename(columns={'level_1': 'Function'}) \
-              .append(get_sem_df(raw_summary).rename(columns={'Group':col})) \
-              .sort([col,'Function'])
-  summary = move_columns(summary,[[col,0],['Function',1]])
+              .append(get_sem_df(raw_summary).rename(columns={'Group':'Well Name'})) \
+              .merge(counts,on=['Well Name','Function'],how='left') \
+              .sort(['Well Name','Function'])
+  summary = move_columns(summary,[['Well Name',0],['Function',1]])
     
   # Add condition column to well data via join (and move to 2nd position)
-  if col == 'Well Name':
-      return move_column(pd.merge(summary,conds,on='Well Name'),
-                                   'Condition',1)
-  else:
-      return summary
-
-condition_summary = summarize(data,'Condition')
-well_summary = summarize(data,'Well Name')
+  return move_column(pd.merge(summary,conds,on='Well Name'),
+                              'Condition',1)
+  
+condition_summary = summarize_conditions(data)
+well_summary = summarize_wells(data)
 
 # Write to files
 data.to_csv('../output/moldev_cleaned.csv',index=False)
