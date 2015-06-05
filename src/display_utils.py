@@ -131,7 +131,7 @@ def dose_plot(df,err,cols,scale='linear'):
     n_rows = int(np.ceil(len(cols)/3.0))
     plt.figure(figsize=(20,4 * n_rows))
     subs = gridspec.GridSpec(n_rows, 3) 
-    plt.subplmots_adjust(hspace=0.54,wspace=0.27)
+    plt.subplots_adjust(hspace=0.54,wspace=0.27)
 
     for col,sub in zip(cols,subs):
         plt.subplot(sub)
@@ -217,14 +217,29 @@ def plot_plate(data,parameter,function='mean',color = 'Blues',show = 'None'):
         labels = to_plate_layout_matrix(data,'Condition')
         for y in range(labels.shape[0]):
             for x in range(labels.shape[1]):
-                plt.text(x, y, labels[y, x],
+                plt.text(x, y, format_long_line(labels[y, x],12),
                          horizontalalignment='center',
                          verticalalignment='center',
                          )
 
-# def findall(m,pattern):
-#     return [m.start() for m in re.finditer('test', 'test test test test')]
+def findall(s,pattern):
+    """ Return list of indices where pattern occurs in s. """
+    return [m.start() for m in re.finditer(pattern, s)]
 
-def format_long_line(s):
-    if len(s) > 12: 
-        spaces = findall()
+def get_split_location(s):
+    """ Return location with space nearest middle of string."""
+    n = float(len(s))
+    spaces = findall(s,' ')
+    return spaces[np.argmin([np.abs((x/n) - 0.5) for x in spaces])]
+
+def split_line(s):
+    """ Return new string, where space nearest center has been replaced by newline. """
+    x = get_split_location(s)
+    return s[:x] + '\n' + s[x+1:]
+
+def format_long_line(s,n):
+    """ If s is longer than n, try to break line in two, """
+    if len(s) > n:
+        return split_line(s)
+    else:
+        return s
