@@ -15,19 +15,17 @@ cells = drop_unwanted_cols(cells_raw.dropna(axis=1,how='all')).rename(columns=re
 conds = create_condition_lookup(conds_raw.dropna(axis=1,how='all'))
 
 # Add new derived columns
-derived_cols = [['Normalized APB spots',['# of APBs'],['# of FITC spots', '# of TxRed spots']],
-                ['Normalized Coloc spots',['# of Coloc Spots'],['# of FITC spots', '# of TxRed spots']],
-                ['Normalized Coloc area',['Area of Coloc spots'],['Area of FITC-TxRed spots']]]
-
-cells = thread_first(cells,
-                     (normalize_by_division,()))
-
-
-# a -> (a -> a) -> [[b]] -> a
-# def thread_first_repeat(x,f,args):
-#   """ Execute thread first with f applied once for each set of args. """
-
-
+derived_cols = [['Normalized APB spots',  
+                  ['# of APBs'],
+                  ['# of FITC spots', '# of TxRed spots']],
+                ['Normalized Coloc spots',
+                  ['# Coloc Spots'],   
+                  ['# of FITC spots', '# of TxRed spots']],
+                ['Normalized Coloc area', 
+                  ['Area_Coloc_Avg'],
+                  ['Area_FITC','Area_TxRed']]]
+                  
+cells = thread_first_repeat(cells,normalize_by_division,derived_cols)
 
 # Check that no wells are listed more than once in table
 assert len(conds['Well Name']) == len(conds['Well Name'].unique()), \
