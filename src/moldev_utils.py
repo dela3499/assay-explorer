@@ -141,7 +141,6 @@ def normalize_by_division(df,newcol,numerator_cols,denominator_cols):
   numerator = df[numerator_cols].apply(sum, axis = 1)
   denominator = df[denominator_cols].apply(sum, axis = 1)
   new_df = df.copy()
-  print numerator / denominator
   new_df[newcol] = numerator / denominator
   return new_df    
 
