@@ -15,6 +15,8 @@ from IPython.display import display
 import IPython.html.widgets as widgets
 from IPython.utils.traitlets import link as traitlink
 
+import re
+
 def filter_and_drop(df,col,val):
     """ Return DataFrame with rows that match filter. Filter column is dropped. """
     return df[df[col] == val].drop([col],axis=1)
@@ -129,7 +131,7 @@ def dose_plot(df,err,cols,scale='linear'):
     n_rows = int(np.ceil(len(cols)/3.0))
     plt.figure(figsize=(20,4 * n_rows))
     subs = gridspec.GridSpec(n_rows, 3) 
-    plt.subplots_adjust(hspace=0.54,wspace=0.27)
+    plt.subplmots_adjust(hspace=0.54,wspace=0.27)
 
     for col,sub in zip(cols,subs):
         plt.subplot(sub)
@@ -193,7 +195,7 @@ def to_plate_layout_matrix(data,col,function='mean'):
 
     return np.reshape(df[col].values,[n_rows,n_cols])
 
-def plot_plate(data,parameter,function='mean',color = 'Blues',show_numbers = False):
+def plot_plate(data,parameter,function='mean',color = 'Blues',show = 'None'):
     matrix = to_plate_layout_matrix(data,parameter,function)
     xlabels = np.arange(matrix.shape[1]) + 1
     ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
@@ -204,10 +206,25 @@ def plot_plate(data,parameter,function='mean',color = 'Blues',show_numbers = Fal
     plt.xticks(range(len(xlabels)),xlabels)
     plt.yticks(range(len(ylabels)),ylabels)
     
-    if show_numbers: 
+    if show == 'Values':
         for y in range(matrix.shape[0]):
             for x in range(matrix.shape[1]):
                 plt.text(x, y, '%.1f' % matrix[y, x],
                          horizontalalignment='center',
                          verticalalignment='center',
                          ) 
+    elif show == 'Conditions':
+        labels = to_plate_layout_matrix(data,'Condition')
+        for y in range(labels.shape[0]):
+            for x in range(labels.shape[1]):
+                plt.text(x, y, labels[y, x],
+                         horizontalalignment='center',
+                         verticalalignment='center',
+                         )
+
+# def findall(m,pattern):
+#     return [m.start() for m in re.finditer('test', 'test test test test')]
+
+def format_long_line(s):
+    if len(s) > 12: 
+        spaces = findall()
