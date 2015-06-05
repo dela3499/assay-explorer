@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import functools
-from toolz import thread_first
+from toolz import thread_first, assoc
 
 # TODO: improve the way that SEM is calculated and added to data
 
