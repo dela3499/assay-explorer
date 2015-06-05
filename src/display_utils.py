@@ -205,7 +205,8 @@ def plot_plate(data,parameter,function='mean',color = 'Blues',show = 'None'):
     
     plt.xticks(range(len(xlabels)),xlabels)
     plt.yticks(range(len(ylabels)),ylabels)
-    
+    plt.title("{} ({})".format(parameter,function))
+
     if show == 'Values':
         for y in range(matrix.shape[0]):
             for x in range(matrix.shape[1]):
