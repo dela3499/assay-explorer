@@ -24,8 +24,10 @@ derived_cols = [['Normalized APB spots',
                 ['Normalized Coloc area', 
                   ['Area_Coloc_Avg'],
                   ['Area_FITC','Area_TxRed']]]
-                  
-cells = thread_first_repeat(cells,normalize_by_division,derived_cols)
+
+cells = thread_first_repeat(cells,
+                            normalize_by_division,
+                            derived_cols)
 
 # Check that no wells are listed more than once in table
 assert len(conds['Well Name']) == len(conds['Well Name'].unique()), \

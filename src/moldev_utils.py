@@ -138,9 +138,10 @@ def reverse(x):
 # DataFrame -> String -> [String] -> [String] -> DataFrame
 def normalize_by_division(df,newcol,numerator_cols,denominator_cols):
   """ Return new DataFrame, where newcol = sum(numerator_cols)/sum(denominator_cols)"""
-  numerator = df[numerator_cols].apply(sum)
-  denominator = df[denominator_cols].apply(sum)
+  numerator = df[numerator_cols].apply(sum, axis = 1)
+  denominator = df[denominator_cols].apply(sum, axis = 1)
   new_df = df.copy()
+  print numerator / denominator
   new_df[newcol] = numerator / denominator
   return new_df    
 
