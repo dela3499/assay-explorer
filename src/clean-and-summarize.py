@@ -14,6 +14,21 @@ conds_raw = pd.read_csv(conds_wells_path,skiprows=[1])
 cells = drop_unwanted_cols(cells_raw.dropna(axis=1,how='all')).rename(columns=rename_col)
 conds = create_condition_lookup(conds_raw.dropna(axis=1,how='all'))
 
+# Add new derived columns
+derived_cols = [['Normalized APB spots',['# of APBs'],['# of FITC spots', '# of TxRed spots']],
+                ['Normalized Coloc spots',['# of Coloc Spots'],['# of FITC spots', '# of TxRed spots']],
+                ['Normalized Coloc area',['Area of Coloc spots'],['Area of FITC-TxRed spots']]]
+
+cells = thread_first(cells,
+                     (normalize_by_division,()))
+
+
+# a -> (a -> a) -> [[b]] -> a
+# def thread_first_repeat(x,f,args):
+#   """ Execute thread first with f applied once for each set of args. """
+
+
+
 # Check that no wells are listed more than once in table
 assert len(conds['Well Name']) == len(conds['Well Name'].unique()), \
   'Found duplicate well names in {}\n'.format(conds_wells_path) + \
