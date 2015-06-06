@@ -24,7 +24,7 @@ def pull_latest_code(m=sh):
     m.git('reset','--hard','origin/master')
     
 def restart_ipython_server(m):
-    m.nohup('ipython notebook','&')
+    m.nohup('ipython', 'notebook')
 
 kill_matching_processes("ipython")
 pull_latest_code()
