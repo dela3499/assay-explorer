@@ -24,9 +24,18 @@ def pull_latest_code(m=sh):
     m.git('clean','-df')
     m.git('reset','--hard','origin/master')
     
-def restart_ipython_server(m=sh):
+<<<<<<< HEAD
+def restart_ipython_server(m):
     m.nohup('ipython', 'notebook')
 
 kill_matching_processes("ipython")
 pull_latest_code()
 restart_ipython_server()    
+=======
+def restart_ipython_server(m=sh):
+    m.nohup('ipython notebook','&')
+
+kill_matching_processes("ipython")
+pull_latest_code()
+restart_ipython_server()
+>>>>>>> d160e2d34c383c1ba4abfcd44577a0dab0ce0792
