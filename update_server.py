@@ -19,13 +19,14 @@ def kill_matching_processes(pattern,m=sh):
     kill_pids(pids,m)        
     
 def pull_latest_code(m=sh):
+    m.cd('/home/ubuntu/prod/assay-explorer')
     m.git('fetch','--all')
     m.git('clean','-df')
     m.git('reset','--hard','origin/master')
     
-def restart_ipython_server(m):
+def restart_ipython_server(m=sh):
     m.nohup('ipython notebook','&')
 
 kill_matching_processes("ipython")
 pull_latest_code()
-restart_ipython_server()    
+restart_ipython_server()
