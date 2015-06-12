@@ -1,28 +1,34 @@
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
-from toolz import thread_first,curry
 import re
-
+from toolz import thread_first,\
+                  thread_last,\
+                  curry
 
 # a -> Int -> [a]
 def repeat(x,n):
-  """ Return list with x repeated n times. """
-  return [x for _ in range(n)]
+    """ Return list with x repeated n times. """
+    return [x for _ in range(n)]
+
+def reset_index(dataframe):
+    return dataframe.reset_index(drop=True)
+
+snd = lambda x: x[1]  
 
 def curry_funcs(funcs):
-  for func in funcs:
-    try: 
-      exec('global {}; {} = curry({})'.format(*[func]*3))
-    except:
-      exec('{} = curry({})'.format(*[func]*2))
+    for func in funcs:
+      try: 
+        exec('global {}; {} = curry({})'.format(*[func]*3))
+      except:
+        exec('{} = curry({})'.format(*[func]*2))
 
 # a -> (a -> [b] -> a) -> [[b]] -> a
 def thread_first_repeat(x,f,args):
-  """ Execute thread first with f applied once for each set of args. """
-  return thread_first(x,*map(lambda x,y: tuple([x] + y),
-                            repeat(f,len(args)),
-                            args))
+    """ Execute thread first with f applied once for each set of args. """
+    return thread_first(x,*map(lambda x,y: tuple([x] + y),
+                               repeat(f,len(args)),
+                               args))
 
 # String -> [Regex] -> Boolean
 def matches_any_pattern(s,patterns):
@@ -64,6 +70,22 @@ def header_to_column(series):
 def headers_to_column(dataframe):
     """ Given Dataframe, return new Dataframe with two columns: value, label. 
     Created by taking each value in table, and pairing it with its column name. """
-    reshaped_dataframes = [header_to_column(dataframe[col]) 
-                            for col in df.columns]
-    return pd.concat(reshaped_dataframes).reset_index(drop=True)    
+    reshaped_dataframes = [header_to_column(dataframe[col]) \
+                            for col in dataframe.columns]
+    return pd.concat(reshaped_dataframes).reset_index(drop=True)
+
+@curry
+def summarize(dataframe,funcs = [],names = []):
+    for f in funcs:
+      print df(f(dataframe)).T
+    summary = pd.concat([df(f(dataframe)).T for f in funcs])
+    summary['Function'] = names
+    return summary.reset_index(drop=True)
+
+def summarize_groups(groups,funcs = [],names = []):
+    return thread_last(groups,
+                       (map, snd),
+                       (map,summarize(funcs = funcs, 
+                                      names = names)),
+                       pd.concat,
+                       reset_index)

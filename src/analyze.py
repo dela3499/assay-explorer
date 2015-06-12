@@ -4,7 +4,9 @@ import numpy as np
 from toolz import thread_first
 from utils import curry_funcs,\
                   drop_matching_columns,\
-                  add_normalized_columns
+                  add_normalized_columns,\
+                  headers_to_column,\
+                  summarize_groups
 
 curry_funcs(['pd.read_csv',
              'df.dropna',
@@ -26,7 +28,15 @@ def rename_column(col):
 def check_cell_data(dataframe):
     return dataframe
 
-cell = dict(
+# type CellConfig = {
+#        path      :: String,
+#        skiprows  :: Int | [Int],
+#        dropcols  :: [RegexString],
+#        normcols  :: [[String,[String],[String]]],
+#        colrename :: (String -> String),
+#        check     :: (DataFrame -> DataFrame | Exception) }
+
+cell_config = dict(
     path = '../input/moldev_data.csv',
     skiprows = 4,
     dropcols = ['Cell ID',
@@ -37,12 +47,12 @@ cell = dict(
     normcols = [['Normalized APB spots',  
                   ['# of APBs'],
                   ['# of FITC spots', '# of TxRed spots']],
-                ['Normalized Coloc spots',
-                  ['# Coloc Spots'],   
-                  ['# of FITC spots', '# of TxRed spots']],
-                ['Normalized Coloc area', 
+                ['Normalized Coloc area (This is a test.)', 
                   ['Area_Coloc_Avg'],
-                  ['Area_FITC','Area_TxRed']]],
+                  ['Area_FITC','Area_TxRed']],
+                ['Normalized Coloc spots (this is also a test.)',
+                  ['# Coloc Spots'],   
+                  ['# of FITC spots', '# of TxRed spots']]],
     colrename = rename_column,
     check = check_cell_data
     )
@@ -54,7 +64,12 @@ cell = dict(
 def check_lookup_data(dataframe):
     return dataframe
 
-lookup = dict(
+# type LookupConfig = {
+#        path      :: String,
+#        skiprows  :: Int | [Int],
+#        check     :: (DataFrame -> DataFrame | Exception) }
+
+lookup_config = dict(
     path = '../input/conditions_and_wells.csv',
     skiprows = [1],
     check = check_lookup_data
@@ -64,14 +79,6 @@ lookup = dict(
 ### Analysis ######################################
 ###################################################
 
-# type CellConfig = {
-#        path      :: String,
-#        skiprows  :: Int | [Int],
-#        dropcols  :: [RegexString],
-#        normcols  :: [[String,[String],[String]]],
-#        colrename :: (String -> String),
-#        check     :: (DataFrame -> DataFrame | Exception) }
-#
 # CellConfig -> DataFrame
 def get_cell_data(c):
     return thread_first(c['path'],
@@ -82,11 +89,6 @@ def get_cell_data(c):
                         (add_normalized_columns,c['normcols']),
                         c['check'])
 
-# type LookupConfig = {
-#        path      :: String,
-#        skiprows  :: Int | [Int],
-#        check     :: (DataFrame -> DataFrame | Exception) }
-#
 # LookupConfig -> DataFrame
 def get_lookup_data(c):
     return thread_first(c['path'],
@@ -98,10 +100,27 @@ def get_lookup_data(c):
                                     label = 'Condition')),
                         c['check'])
 
-def get_data(cell_data,lookup_data):
-    return 
+def summarize_conditions(data,c):
+    return thread_first(data,
+                        (df.groupby,c['groupby']),
+                        (summarize_groups,c['funcs'],c['fnames']))
 
-data = pd.merge(cell_data,
-                lookup_data,
-                on='Well Name')
+data = pd.merge(get_cell_data(cell_config),
+                get_lookup_data(lookup_config),
+                on = 'Well Name')
 
+# condition_config = dict(
+#     groupby = 'Condition',
+#     funcs = [df.mean,df.std,df.sem,df.count,df.min,df.max],
+#     fnames = ['avg','std','sem','count','min','max'])
+
+# condition_data = summarize_conditions(data,condition_config)
+# print condition_data
+
+
+cell_data = get_cell_data(cell_config)
+lookup_data = get_lookup_data(lookup_config)
+x = 'also'
+print [col for col in cell_data.columns if x in col.lower()]
+print [col for col in lookup_data.columns if x in col.lower()]
+print [col for col in data.columns if x in col.lower()]
