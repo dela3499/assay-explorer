@@ -149,9 +149,3 @@ def repeat(x,n):
   """ Return list with x repeated n times. """
   return [x for _ in range(n)]
 
-# a -> (a -> [b] -> a) -> [[b]] -> a
-def thread_first_repeat(x,f,args):
-  """ Execute thread first with f applied once for each set of args. """
-  return thread_first(x,*map(lambda x,y: tuple([x] + y),
-                            repeat(f,len(args)),
-                            args))
