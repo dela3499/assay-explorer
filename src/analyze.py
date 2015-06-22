@@ -105,7 +105,7 @@ def summarize_conditions(data,c):
                         (df.groupby,c['groupby']),
                         (summarize_groups,c['funcs'],c['fnames']))
 
-data = pd.merge(get_cell_data(cell_config)[range(33)],
+data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
@@ -116,18 +116,3 @@ data = pd.merge(get_cell_data(cell_config)[range(33)],
 
 # condition_data = summarize_conditions(data,condition_config)
 # print condition_data
-
-
-cell_data = get_cell_data(cell_config)
-lookup_data = get_lookup_data(lookup_config)
-x = '_x'
-print [col for col in cell_data.columns if x in col.lower()]
-print [col for col in lookup_data.columns if x in col.lower()]
-print [col for col in data.columns if x in col.lower()]
-
-print '----------'
-for col in cell_data.columns:
-  print col
-print '----------'
-for col in lookup_data.columns:
-  print col
