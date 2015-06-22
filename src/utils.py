@@ -93,7 +93,6 @@ def get_string_columns(dataframe):
     return [col for col in dataframe.columns \
               if dataframe[col].dtype == 'object']
 
-
 def summarize_groups(groups,funcs = [],names = []):
     return thread_last(groups,
                        (map, snd),
