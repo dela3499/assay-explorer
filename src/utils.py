@@ -74,6 +74,13 @@ def headers_to_column(dataframe):
                             for col in dataframe.columns]
     return pd.concat(reshaped_dataframes).reset_index(drop=True)
 
+# DataFrame -> [String]
+def get_string_columns(dataframe):
+    """ Return columns with string values."""
+    return [col for col in dataframe.columns \
+              if dataframe[col].dtype == 'object']
+
+# DataFrame -> [(DataFrame -> Series)] -> [String] -> DataFrame
 @curry
 def summarize(dataframe,funcs = [],names = []):
     summary = pd.concat([df(f(dataframe)).T for f in funcs])
@@ -88,11 +95,7 @@ def summarize(dataframe,funcs = [],names = []):
 
     return summary.reset_index(drop=True)
 
-def get_string_columns(dataframe):
-    """ Return columns with string values."""
-    return [col for col in dataframe.columns \
-              if dataframe[col].dtype == 'object']
-
+# GroupBy -> [(DataFrame -> Series)] -> [String] -> DataFrame
 def summarize_groups(groups,funcs = [],names = []):
     return thread_last(groups,
                        (map, snd),
