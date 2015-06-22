@@ -76,8 +76,6 @@ def headers_to_column(dataframe):
 
 @curry
 def summarize(dataframe,funcs = [],names = []):
-    for f in funcs:
-      print df(f(dataframe)).T
     summary = pd.concat([df(f(dataframe)).T for f in funcs])
     summary['Function'] = names
     return summary.reset_index(drop=True)
