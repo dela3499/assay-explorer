@@ -82,7 +82,7 @@ def summarize(dataframe,funcs = [],names = []):
     # Set string column names (since they can't be aggregated)
     for col in get_string_columns(dataframe):
       vals = list(set(dataframe[col].values))
-      assert len(vals) == 2, \
+      assert len(vals) == 1, \
         "Values in '{}' column should be the same in a group. Found multiple values: {}".format(col,vals)
       summary[col] = dataframe[col].iloc[0]
 
