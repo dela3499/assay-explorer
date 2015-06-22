@@ -76,6 +76,17 @@ lookup_config = dict(
     )
 
 ###################################################
+### Summary Config ################################
+###################################################
+
+funcs = [df.mean,df.std,df.sem,df.count,df.min,df.max]
+fnames = ['avg','std','sem','count','min','max']
+
+condition_config = dict(groupby = 'Condition', funcs = funcs, fnames = fnames)
+well_config = dict(groupby = 'Well Name', funcs = funcs, fnames = fnames)
+
+
+###################################################
 ### Analysis ######################################
 ###################################################
 
@@ -105,12 +116,6 @@ def summarize_conditions(data,c):
                         (df.groupby,c['groupby']),
                         (summarize_groups,c['funcs'],c['fnames']))
 
-funcs = [df.mean,df.std,df.sem,df.count,df.min,df.max]
-fnames = ['avg','std','sem','count','min','max']
-
-condition_config = dict(groupby = 'Condition', funcs = funcs, fnames = fnames)
-well_config = dict(groupby = 'Well Name', funcs = funcs, fnames = fnames)
-
 data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
@@ -125,4 +130,3 @@ well_summary = summarize_conditions(data,
 data.to_csv('../output/moldev_cleaned.csv',index=False)
 well_summary.to_csv('../output/well_summary.csv',index=False)
 condition_summary.to_csv('../output/condition_summary.csv',index=False)
-# condition_summary.T.to_csv('../output/condition_summary_transpose.csv',header=False)
