@@ -84,8 +84,8 @@ def get_cell_data(c):
     return thread_first(c['path'],
                         pd.read_csv(skiprows=c['skiprows']),
                         df.dropna(axis=1,how='all'),
-                        df.rename(columns=c['colrename']),
                         (drop_matching_columns,c['dropcols']),
+                        df.rename(columns=c['colrename']),
                         (add_normalized_columns,c['normcols']),
                         c['check'])
 
@@ -105,7 +105,7 @@ def summarize_conditions(data,c):
                         (df.groupby,c['groupby']),
                         (summarize_groups,c['funcs'],c['fnames']))
 
-data = pd.merge(get_cell_data(cell_config),
+data = pd.merge(get_cell_data(cell_config)[range(33)],
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
