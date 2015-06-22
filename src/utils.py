@@ -78,7 +78,21 @@ def headers_to_column(dataframe):
 def summarize(dataframe,funcs = [],names = []):
     summary = pd.concat([df(f(dataframe)).T for f in funcs])
     summary['Function'] = names
+
+    # Set string column names (since they can't be aggregated)
+    for col in get_string_columns(dataframe):
+      vals = list(set(dataframe[col].values))
+      assert len(vals) == 2, \
+        "Values in '{}' column should be the same in a group. Found multiple values: {}".format(col,vals)
+      summary[col] = dataframe[col].iloc[0]
+
     return summary.reset_index(drop=True)
+
+def get_string_columns(dataframe):
+    """ Return columns with string values."""
+    return [col for col in dataframe.columns \
+              if dataframe[col].dtype == 'object']
+
 
 def summarize_groups(groups,funcs = [],names = []):
     return thread_last(groups,

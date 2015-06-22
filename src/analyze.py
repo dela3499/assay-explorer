@@ -109,10 +109,14 @@ data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
-# condition_config = dict(
-#     groupby = 'Condition',
-#     funcs = [df.mean,df.std,df.sem,df.count,df.min,df.max],
-#     fnames = ['avg','std','sem','count','min','max'])
 
-# condition_data = summarize_conditions(data,condition_config)
-# print condition_data
+
+funcs = [df.mean,df.std,df.sem,df.count,df.min,df.max]
+fnames = ['avg','std','sem','count','min','max']
+
+condition_config = dict(groupby = 'Condition', funcs = funcs, fnames = fnames)
+well_config = dict(groupby = 'Well Name', funcs = funcs, fnames = fnames)
+
+condition_data = summarize_conditions(data.drop('Well Name',axis=1),
+                                      condition_config)
+print condition_data
