@@ -47,10 +47,10 @@ cell_config = dict(
     normcols = [['Normalized APB spots',  
                   ['# of APBs'],
                   ['# of FITC spots', '# of TxRed spots']],
-                ['Normalized Coloc area (This is a test.)', 
+                ['Normalized Coloc area', 
                   ['Area_Coloc_Avg'],
                   ['Area_FITC','Area_TxRed']],
-                ['Normalized Coloc spots (this is also a test.)',
+                ['Normalized Coloc spots',
                   ['# Coloc Spots'],   
                   ['# of FITC spots', '# of TxRed spots']]],
     colrename = rename_column,
@@ -120,7 +120,14 @@ data = pd.merge(get_cell_data(cell_config),
 
 cell_data = get_cell_data(cell_config)
 lookup_data = get_lookup_data(lookup_config)
-x = 'also'
+x = '_x'
 print [col for col in cell_data.columns if x in col.lower()]
 print [col for col in lookup_data.columns if x in col.lower()]
 print [col for col in data.columns if x in col.lower()]
+
+print '----------'
+for col in cell_data.columns:
+  print col
+print '----------'
+for col in lookup_data.columns:
+  print col
