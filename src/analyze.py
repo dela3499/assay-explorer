@@ -120,7 +120,7 @@ data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
-condition_summary = summarize_by_group(data.drop('Well Name',axis=1),
+condition_summary = summarize_by_group(data,
                                        condition_config)
 
 well_summary = summarize_by_group(data,
