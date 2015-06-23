@@ -80,26 +80,59 @@ def get_string_columns(dataframe):
     return [col for col in dataframe.columns \
               if dataframe[col].dtype == 'object']
 
+
+
+#   # Add cell count column
+#   sizes = df.groupby('Well Name')\
+#     .size()\
+#     .reset_index()\
+#     .rename(columns={0:'Cell Count'})
+
+#   counts = pd.merge(conds,
+#                     sizes,
+#                     on='Well Name')\
+#               .groupby('Condition')\
+#               .describe()
+  
+#   raw_summary = pd.merge(raw_summary,
+#                          counts,
+#                          left_index=True,
+#                          right_index=True)
+
+# ###
+#   counts = df.groupby('Well Name')\
+#     .size()\
+#     .reset_index()\
+#     .rename(columns={0:'Cell Count'})
+
+#   counts['Function'] = 'mean'
+
+# DataFrame -> [(DataFrame -> Series)] -> [String] -> DataFrame
+def multiaggregate(dataframe,funcs,fnames):
+    agg = pd.concat([df(f(dataframe)).T for f in funcs])
+    agg['Function'] = fnames
+    return agg
+
 # DataFrame -> [(DataFrame -> Series)] -> [String] -> DataFrame
 @curry
-def summarize(dataframe,funcs = [],names = []):
-    summary = pd.concat([df(f(dataframe)).T for f in funcs])
-    summary['Function'] = names
-
-    # Set string column names (since they can't be aggregated)
+def summarize(dataframe,funcs = [],fnames = []):
+    summary = multiaggregate(dataframe,funcs,fnames)
+    
+    # Properly set string columns 
+    # (drop columns with more than a single unique value.)
     for col in get_string_columns(dataframe):
-      vals = list(set(dataframe[col].values))
-      assert len(vals) == 1, \
-        "Values in '{}' column should be the same in a group. Found multiple values: {}".format(col,vals)
-      summary[col] = dataframe[col].iloc[0]
+        if dataframe[col].nunique() == 1:
+            summary[col] = dataframe[col].iloc[0]
+        else:
+            summary = summary.drop(col,axis=1)
 
     return summary.reset_index(drop=True)
 
 # GroupBy -> [(DataFrame -> Series)] -> [String] -> DataFrame
-def summarize_groups(groups,funcs = [],names = []):
+def summarize_groups(groups,funcs = [],fnames = []):
     return thread_last(groups,
                        (map, snd),
                        (map,summarize(funcs = funcs, 
-                                      names = names)),
+                                      fnames = fnames)),
                        pd.concat,
                        reset_index)
