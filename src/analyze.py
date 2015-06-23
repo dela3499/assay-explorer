@@ -111,7 +111,7 @@ def get_lookup_data(c):
                                     label = 'Condition')),
                         c['check'])
 
-def summarize_conditions(data,c):
+def summarize_by_group(data,c):
     return thread_first(data,
                         (df.groupby,c['groupby']),
                         (summarize_groups,c['funcs'],c['fnames']))
@@ -120,11 +120,11 @@ data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
-condition_summary = summarize_conditions(data.drop('Well Name',axis=1),
-                                         condition_config)
+condition_summary = summarize_by_group(data.drop('Well Name',axis=1),
+                                       condition_config)
 
-well_summary = summarize_conditions(data,
-                                    well_config)
+well_summary = summarize_by_group(data,
+                                  well_config)
 
 # Write to files
 data.to_csv('../output/moldev_cleaned.csv',index=False)
