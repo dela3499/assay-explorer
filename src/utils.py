@@ -6,14 +6,20 @@ from toolz import thread_first,\
                   thread_last,\
                   curry
 
+# a -> a
+def identity(x):
+    return x
+
 # a -> Int -> [a]
 def repeat(x,n):
     """ Return list with x repeated n times. """
     return [x for _ in range(n)]
 
+# DataFrame -> DataFrame
 def reset_index(dataframe):
     return dataframe.reset_index(drop=True)
 
+# (a,b) -> b
 snd = lambda x: x[1]  
 
 def curry_funcs(funcs):
@@ -129,8 +135,9 @@ def summarize(dataframe,funcs = [],fnames = []):
     return summary.reset_index(drop=True)
 
 # GroupBy -> [(DataFrame -> Series)] -> [String] -> DataFrame
-def summarize_groups(groups,funcs = [],fnames = []):
-    return thread_last(groups,
+def groupby_and_summarize(dataframe,col,funcs = [],fnames = []):
+    return thread_last(dataframe,
+                       lambda x: x.groupby(col),
                        (map, snd),
                        (map,summarize(funcs = funcs, 
                                       fnames = fnames)),

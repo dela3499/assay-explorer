@@ -1,12 +1,15 @@
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
-from toolz import thread_first
+from toolz import thread_first,\
+                  thread_last,\
+                  juxt
 from utils import curry_funcs,\
                   drop_matching_columns,\
                   add_normalized_columns,\
                   headers_to_column,\
-                  summarize_groups
+                  groupby_and_summarize,\
+                  identity
 
 curry_funcs(['pd.read_csv',
              'df.dropna',
@@ -111,22 +114,52 @@ def get_lookup_data(c):
                                     label = 'Condition')),
                         c['check'])
 
-def summarize_by_group(data,c):
-    return thread_first(data,
-                        (df.groupby,c['groupby']),
-                        (summarize_groups,c['funcs'],c['fnames']))
+# DataFrame -> DataFrame
+# ['Condition','Well Name',...] -> ['Well Name','Cell Count']
+# def get_well_cell_counts(dataframe):
+#     return thread_first(dataframe.groupby('Well Name').size().reset_index(),
+#                         df.rename(columns = {0:'Cell Count'}))
+
+def get_well_cell_counts(dataframe):
+    return thread_last(dataframe.groupby('Well Name'),
+                      (map,lambda x: {"Well Name": x[0],
+                                      "Cell Count": len(x[1]),
+                                      "Condition": x[1]['Condition'].iloc[0]}),
+                      df)
+
+# DataFrame -> WellSummaryConfig -> DataFrame
+def summarize_wells(dataframe,c):
+    parameters = groupby_and_summarize(dataframe,c['groupby'],c['funcs'],c['fnames'])
+    cell_counts = get_well_cell_counts(dataframe)
+    cell_counts['Function'] = 'avg'
+    cell_counts = cell_counts.drop('Condition',axis=1)
+    return pd.merge(parameters,
+                    cell_counts,
+                    on=['Well Name','Function'],
+                    how='left')
+
+# DataFrame -> ConditionSummaryConfig -> DataFrame
+def summarize_conditions(dataframe,c):
+    return thread_last(dataframe,
+                       juxt(identity,get_well_cell_counts),
+                       (map,lambda x: groupby_and_summarize(x,
+                                                            c['groupby'],
+                                                            c['funcs'],
+                                                            c['fnames'])),
+                       lambda x: pd.merge(*x,on=['Condition','Function']))
 
 data = pd.merge(get_cell_data(cell_config),
                 get_lookup_data(lookup_config),
                 on = 'Well Name')
 
-condition_summary = summarize_by_group(data,
-                                       condition_config)
-
-well_summary = summarize_by_group(data,
-                                  well_config)
+well_summary = summarize_wells(data,well_config)
+condition_summary = summarize_conditions(data,condition_config)
 
 # Write to files
 data.to_csv('../output/moldev_cleaned.csv',index=False)
 well_summary.to_csv('../output/well_summary.csv',index=False)
 condition_summary.to_csv('../output/condition_summary.csv',index=False)
+
+
+# rewrite agg functions to be a dict, rather than two lists. It's a lot to pass around through three or four functions. 
+# Currying and named arguments don't mix well
