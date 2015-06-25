@@ -23,7 +23,7 @@ def filter_and_drop(df,col,val):
 
 def get_means(df):
     """ Get means from data. """
-    return filter_and_drop(df,'Function','mean')
+    return filter_and_drop(df,'Function','avg')
 
 def normalize_columns(df):
     """ Return new DataFrame, where the norm of each column is the unit value. """
