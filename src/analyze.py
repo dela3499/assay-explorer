@@ -114,12 +114,6 @@ def get_lookup_data(c):
                                     label = 'Condition')),
                         c['check'])
 
-# DataFrame -> DataFrame
-# ['Condition','Well Name',...] -> ['Well Name','Cell Count']
-# def get_well_cell_counts(dataframe):
-#     return thread_first(dataframe.groupby('Well Name').size().reset_index(),
-#                         df.rename(columns = {0:'Cell Count'}))
-
 def get_well_cell_counts(dataframe):
     return thread_last(dataframe.groupby('Well Name'),
                       (map,lambda x: {"Well Name": x[0],
