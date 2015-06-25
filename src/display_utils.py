@@ -172,8 +172,10 @@ def colorize(c):
     else:
         raise Exception('Do not know how to color {}'.format(c))
 
-def to_plate_layout_matrix(data,col,function='mean'):
+def to_plate_layout_matrix(data,col,function='avg'):
     """ Return a matrix, given a DataFrame, a function to select, and a column to choose data from."""
+
+    assert function in data['Function'].unique(), "{} function not present in dataframe.".format(function)
 
     def get_row(well_name):
         raw_coords = re.match('([a-z]*)([0-9]*)',well_name,flags=re.IGNORECASE).groups()
@@ -195,7 +197,7 @@ def to_plate_layout_matrix(data,col,function='mean'):
 
     return np.reshape(df[col].values,[n_rows,n_cols])
 
-def plot_plate(data,parameter,function='mean',color = 'Blues',show = 'None'):
+def plot_plate(data,parameter,function='avg',color = 'Blues',show = 'None'):
     matrix = to_plate_layout_matrix(data,parameter,function)
     xlabels = np.arange(matrix.shape[1]) + 1
     ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
@@ -215,7 +217,7 @@ def plot_plate(data,parameter,function='mean',color = 'Blues',show = 'None'):
                          verticalalignment='center',
                          ) 
     elif show == 'Conditions':
-        labels = to_plate_layout_matrix(data,'Condition')
+        labels = to_plate_layout_matrix(data,'Condition',function)
         for y in range(labels.shape[0]):
             for x in range(labels.shape[1]):
                 plt.text(x, y, format_long_line(labels[y, x],12),
