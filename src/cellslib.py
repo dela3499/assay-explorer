@@ -5,12 +5,6 @@ from toolz import thread_first,\
                   thread_last,\
                   juxt
 from toolz.curried import map
-#from utils import curry_funcs,\
-#                  drop_matching_columns,\
-#                  add_normalized_columns,\
-#                  headers_to_column,\
-#                  groupby_and_summarize,\
-#                  identity
 execfile('../src/utils.py')                    
 from cStringIO import StringIO
 import uuid
