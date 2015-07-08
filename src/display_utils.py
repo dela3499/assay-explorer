@@ -176,31 +176,6 @@ def colorize(c):
     else:
         raise Exception('Do not know how to color {}'.format(c))
 
-def to_plate_layout_matrix(data,col,function='avg'):
-    """ Return a matrix, given a DataFrame, a function to select, and a column to choose data from."""
-
-    assert function in data['Function'].unique(), "{} function not present in dataframe.".format(function)
-
-    def get_row(well_name):
-        raw_coords = re.match('([a-z]*)([0-9]*)',well_name,flags=re.IGNORECASE).groups()
-        return 'abcdefghijklmnopqrstuvwxyz'.index(raw_coords[0].lower())
-
-    def get_col(well_name):
-        raw_coords = re.match('([a-z]*)([0-9]*)',well_name,flags=re.IGNORECASE).groups()
-        return int(raw_coords[1]) - 1
-    
-    df = filter_rows(data,'Function',function).copy()
-    df['row'] = df['Well Name'].map(get_row)
-    df['column'] = df['Well Name'].map(get_col)
-    df['xy'] = df['row'].map(str) + df['row'].map(lambda x: ' - ') + df['column'].map(str)
-
-    df = df.sort(['row','column'])
-    
-    n_rows = df['row'].unique().size
-    n_cols = df['column'].unique().size
-
-    return np.reshape(df[col].values,[n_rows,n_cols])
-
 def plot_plate_old(data,parameter,function='avg',color = 'Blues',show = 'None'):
     matrix = to_plate_layout_matrix(data,parameter,function)
     xlabels = np.arange(matrix.shape[1]) + 1
