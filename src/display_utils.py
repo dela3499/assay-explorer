@@ -197,7 +197,7 @@ def to_plate_layout_matrix(data,col,function='avg'):
 
     return np.reshape(df[col].values,[n_rows,n_cols])
 
-def plot_plate(data,parameter,function='avg',color = 'Blues',show = 'None'):
+def plot_plate_old(data,parameter,function='avg',color = 'Blues',show = 'None'):
     matrix = to_plate_layout_matrix(data,parameter,function)
     xlabels = np.arange(matrix.shape[1]) + 1
     ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
@@ -246,3 +246,125 @@ def format_long_line(s,n):
         return split_line(s)
     else:
         return s
+    
+@curry
+def map(f,x):
+    """ Apply f to every element in x and return the result. """
+    return [f(xi) for xi in x]   
+
+# Num -> Num
+def inc(x):
+    """ Increment the value of x. """
+    return x + 1
+
+# TODO: change this function - add new variable, and maybe have a look at the summary code. 
+def get_params(df):
+    cols = df.columns.tolist()
+    return sorted([col for col in cols if col not in ['Plate ID','Plate Name','Date','Well Name', 'Condition', 'Base', 'Dose', 'Unit', 'Drug','Function']])
+
+# [a] -> a
+def snd(x):
+    """ Return second element of list. """
+    return x[1]
+
+# [(a,b)] -> [[a],[b]]
+def unzip(x):
+    """ Undo the zip operation. """
+    return [[xi[i] for xi in x] for i in range(len(x[0]))]
+
+# [Num] -> Num
+def vrange(x):
+    """ Return range of values in x. """
+    return max(x) - min(x)
+
+# (a -> b -> c) -> (a -> b -> c)
+class Infix:
+    def __init__(self, function):
+        self.function = function
+    def __ror__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __or__(self, other):
+        return self.function(other)
+    def __rlshift__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __rshift__(self, other):
+        return self.function(other)
+    def __call__(self, value1, value2):
+        return self.function(value1, value2)
+    
+# [a] -> Boolean
+def is_empty(x):
+    return len(x) == 0
+
+# [a] -> [a] -> Boolean
+""" Return True if every element of a is in list b. """
+are_all_in = Infix(lambda a,b: is_empty(set(a).difference(set(b))))
+
+# [(Int,Int)] -> (Int,Int)
+def get_shape_from_coords(coords):
+    """ Return shape of smallest well plate that can contain provided indices."""  
+    well_plate_shapes = [(2,4),(8,12)] # 8 well slide, 96 well plate
+    rows,cols = unzip(coords)
+    for shape in well_plate_shapes:
+        if rows |are_all_in| range(shape[0]) and cols |are_all_in| range(shape[1]):
+            return shape
+    raise Exception("Given well coordinates do not fit in plate shapes:{}".format(well_plate_shapes))
+    
+# a -> [Int,Int] -> [[a]]
+def init_matrix(val,shape):
+    """ Return matrix of given shape with every element set to val. """
+    rows,cols = shape
+    return np.array([[val for _ in range(cols)] for _ in range(rows)])    
+
+# [(Int,Int)] -> [a] -> a -> [[a]]
+def ij_to_matrix(coords,vals,missing):
+    """ Place vals at corresponding (row,column) coordinates.
+        'missing' value is present wherever no val exists."""
+    matrix = init_matrix(missing,
+                         get_shape_from_coords(coords))
+    for coord,val in zip(coords,vals):
+        matrix[coord[0],coord[1]] = val
+    return matrix
+
+# String -> (Int,Int)
+def well_to_ij(well):
+    """ Return (row,column) matrix coordinate from alphanumeric well name. 
+        For instance, well_to_ij(A03) == (0,2)"""
+    return ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(well[0]),
+            int(well[1:]) -1)
+
+# [String] -> [a] -> [[a]]
+def to_plate_layout(well_names,vals):
+    """ Return a 2D matrix of vals, where each val's position corresponds to well position.
+        Any wells missing data are set to mean(vals). """
+    return ij_to_matrix(map(well_to_ij,well_names),
+                        vals,
+                        np.mean(vals))
+
+# [[a]] -> SideEffects
+def plot_plate_ticks(matrix):
+    xlabels = np.arange(matrix.shape[1]) + 1
+    ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
+    plt.xticks(range(len(xlabels)),xlabels)
+    plt.yticks(range(len(ylabels)),ylabels)
+    
+# DataFrame -> String -> String -> {color:String, show:String}
+def plot_plate(dataframe, parameter, function, config):
+    data = filter_rows(dataframe,'Function',function)
+    matrix = to_plate_layout(data['Well Name'].values,
+                             data[parameter].values)
+    plt.imshow(matrix,interpolation='nearest',cmap=config['color'],aspect='auto');
+    plot_plate_ticks(matrix)
+    [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
+    
+# DataFrame -> String -> String -> {color:String, show:String}
+def plot_plates(dataframe, parameter, function, color, show):
+    """ Plot each plate in given dataframe."""
+    plates = map(snd,dataframe.groupby('Plate ID'))
+    plt.figure(figsize=(17,7))
+    subplots = gridspec.GridSpec(len(plates),1)
+    plt.subplots_adjust(hspace=0.54)
+    for plate,sub in zip(plates,subplots):
+        plt.subplot(sub) 
+        plot_plate(plate,parameter,function,dict(color = color,
+                                                 show = show))    
