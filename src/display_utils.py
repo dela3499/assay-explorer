@@ -295,15 +295,27 @@ def init_matrix(val,shape):
     rows,cols = shape
     return np.array([[val for _ in range(cols)] for _ in range(rows)])    
 
-# [(Int,Int)] -> [a] -> a -> [[a]]
+# [a] -> [b] -> [(a,b)]
+def cross(a,b):
+    """ Return list containing all combinations of elements of a and b."""
+    return concatenate([[(ai,bi) for bi in b] for ai in a])
+
+# (Int,Int) -> [(Int,Int)] -> [(Int,Int)]
+def find_missing_values(shape,coords):
+    """ Given shape of 2D matrix and list of ij (row,column) coordinates, return coordinates not in list. """
+    all_coords = cross(range(shape[0]),range(shape[1]))
+    return list(set(all_coords).difference(set(coords)))
+
+# [(Int,Int)] -> [a] -> a -> ([[a]], [(Int,Int)])
 def ij_to_matrix(coords,vals,missing):
     """ Place vals at corresponding (row,column) coordinates in smallest-possible well plate.
-        'missing' value is present wherever no val exists."""
-    matrix = init_matrix(missing,
-                         get_shape_from_coords(coords))
+        'missing' value is present wherever no val exists. Returns both a 2D matrix and a list of wells missing data. """
+    shape = get_shape_from_coords(coords)
+    matrix = init_matrix(missing,shape)
     for coord,val in zip(coords,vals):
         matrix[coord[0],coord[1]] = val
-    return matrix
+    return (matrix,
+            find_missing_values(shape,coords))
 
 # String -> (Int,Int)
 def well_to_ij(well):
@@ -312,10 +324,10 @@ def well_to_ij(well):
     return ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(well[0]),
             int(well[1:]) -1)
 
-# [String] -> [a] -> [[a]]
+# [String] -> [a] -> ([[a]], [(Int,Int)])
 def to_plate_layout(well_names,vals):
     """ Return a smallest-possible, 2D well-plate matrix of vals, where each val's position corresponds to well position.
-        Any wells missing data are set to mean(vals). """
+        Any wells missing data are set to mean(vals). Also returns list of coords not present in well names."""
     return ij_to_matrix(map(well_to_ij,well_names),
                         vals,
                         np.mean(vals))
@@ -327,13 +339,21 @@ def plot_plate_ticks(matrix):
     plt.xticks(range(len(xlabels)),xlabels)
     plt.yticks(range(len(ylabels)),ylabels)
     
+# Int -> Int -> String -> SideEffects                
+def plot_plate_text(i,j,text):
+    plt.text(j,i,text,
+             horizontalalignment='center',
+             verticalalignment='center')    
+    
 # DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
 def plot_plate(dataframe, parameter, function, config):
     data = filter_rows(dataframe,'Function',function)
-    matrix = to_plate_layout(data['Well Name'].values,
-                             data[parameter].values)
+    matrix,missing_coords = to_plate_layout(data['Well Name'].values,
+                                            data[parameter].values)
+    
     plt.imshow(matrix,interpolation='nearest',cmap=config['color'],aspect='auto');
     plot_plate_ticks(matrix)
+    [plot_plate_text(i,j,'No data') for i,j in missing_coords]
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
 # DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
