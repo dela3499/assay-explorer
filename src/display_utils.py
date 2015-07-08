@@ -297,7 +297,7 @@ def init_matrix(val,shape):
 
 # [(Int,Int)] -> [a] -> a -> [[a]]
 def ij_to_matrix(coords,vals,missing):
-    """ Place vals at corresponding (row,column) coordinates.
+    """ Place vals at corresponding (row,column) coordinates in smallest-possible well plate.
         'missing' value is present wherever no val exists."""
     matrix = init_matrix(missing,
                          get_shape_from_coords(coords))
@@ -314,7 +314,7 @@ def well_to_ij(well):
 
 # [String] -> [a] -> [[a]]
 def to_plate_layout(well_names,vals):
-    """ Return a 2D matrix of vals, where each val's position corresponds to well position.
+    """ Return a smallest-possible, 2D well-plate matrix of vals, where each val's position corresponds to well position.
         Any wells missing data are set to mean(vals). """
     return ij_to_matrix(map(well_to_ij,well_names),
                         vals,
