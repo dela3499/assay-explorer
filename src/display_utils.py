@@ -17,6 +17,10 @@ from IPython.utils.traitlets import link as traitlink
 
 import re
 
+# TODO: many of these functions are quite general and may be move to utils.
+# TODO: some of these function can be removed, or added to some other smaller, more specific utils thing. Or maybe just moved to the bottom of this file. 
+# TODO: many of these functions lack type signatures and docstrings. Add them. 
+
 def filter_and_drop(df,col,val):
     """ Return DataFrame with rows that match filter. Filter column is dropped. """
     return df[df[col] == val].drop([col],axis=1)
@@ -348,7 +352,7 @@ def plot_plate_ticks(matrix):
     plt.xticks(range(len(xlabels)),xlabels)
     plt.yticks(range(len(ylabels)),ylabels)
     
-# DataFrame -> String -> String -> {color:String, show:String}
+# DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
 def plot_plate(dataframe, parameter, function, config):
     data = filter_rows(dataframe,'Function',function)
     matrix = to_plate_layout(data['Well Name'].values,
@@ -357,7 +361,7 @@ def plot_plate(dataframe, parameter, function, config):
     plot_plate_ticks(matrix)
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
-# DataFrame -> String -> String -> {color:String, show:String}
+# DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
 def plot_plates(dataframe, parameter, function, color, show):
     """ Plot each plate in given dataframe."""
     plates = map(snd,dataframe.groupby('Plate ID'))
