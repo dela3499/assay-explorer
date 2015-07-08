@@ -324,11 +324,11 @@ def well_to_ij(well):
     return ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.index(well[0]),
             int(well[1:]) -1)
 
-# [String] -> [a] -> ([[a]], [(Int,Int)])
-def to_plate_layout(well_names,vals):
-    """ Return a smallest-possible, 2D well-plate matrix of vals, where each val's position corresponds to well position.
-        Any wells missing data are set to mean(vals). Also returns list of coords not present in well names."""
-    return ij_to_matrix(map(well_to_ij,well_names),
+# [(Int,Int)] -> [a] -> ([[a]], [(Int,Int)])
+def to_plate_layout(coords,vals):
+    """ Return a smallest-possible, 2D well-plate matrix of vals, where each val's position corresponds to its ij-coordinate.
+        Any wells missing data are set to mean(vals). Also returns list of coords in plate that are missing data."""
+    return ij_to_matrix(coords,
                         vals,
                         np.mean(vals))
 
@@ -348,10 +348,13 @@ def plot_plate_text(i,j,text):
 # DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
 def plot_plate(dataframe, parameter, function, config):
     data = filter_rows(dataframe,'Function',function)
-    matrix,missing_coords = to_plate_layout(data['Well Name'].values,
+    coords = map(well_to_ij,
+                 data['Well Name'].values)
+    matrix,missing_coords = to_plate_layout(coords,
                                             data[parameter].values)
     
     plt.imshow(matrix,interpolation='nearest',cmap=config['color'],aspect='auto');
+    
     plot_plate_ticks(matrix)
     [plot_plate_text(i,j,'No data') for i,j in missing_coords]
     [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
