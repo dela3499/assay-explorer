@@ -162,48 +162,6 @@ def dose_plot(df,err,cols,scale='linear'):
 
                 plt.legend(df['Base'].unique(), loc = 0)
 
-def colorize(c):
-    if 'control' in c: 
-        return (1,1,1)
-    elif 'drug A' in c:
-        return (0.3,1,1)
-    elif 'Telomestatin' in c:
-        return (1,0.3,1)
-    elif 'HU' in c:
-        return (1,1,0.3)
-    elif 'DMSO' in c:
-        return (0.3,1,0.3)
-    else:
-        raise Exception('Do not know how to color {}'.format(c))
-
-def plot_plate_old(data,parameter,function='avg',color = 'Blues',show = 'None'):
-    matrix = to_plate_layout_matrix(data,parameter,function)
-    xlabels = np.arange(matrix.shape[1]) + 1
-    ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
-    plt.figure(figsize=(17,5))
-    plt.imshow(matrix,interpolation='nearest',cmap=color,aspect='auto');
-    [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
-    
-    plt.xticks(range(len(xlabels)),xlabels)
-    plt.yticks(range(len(ylabels)),ylabels)
-    plt.title("{} ({})".format(parameter,function))
-
-    if show == 'Values':
-        for y in range(matrix.shape[0]):
-            for x in range(matrix.shape[1]):
-                plt.text(x, y, '%.1f' % matrix[y, x],
-                         horizontalalignment='center',
-                         verticalalignment='center',
-                         ) 
-    elif show == 'Conditions':
-        labels = to_plate_layout_matrix(data,'Condition',function)
-        for y in range(labels.shape[0]):
-            for x in range(labels.shape[1]):
-                plt.text(x, y, format_long_line(labels[y, x],12),
-                         horizontalalignment='center',
-                         verticalalignment='center',
-                         )
-
 def findall(s,pattern):
     """ Return list of indices where pattern occurs in s. """
     return [m.start() for m in re.finditer(pattern, s)]
