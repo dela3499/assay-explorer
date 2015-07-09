@@ -303,7 +303,7 @@ def plot_plate_text(i,j,text,format_string='%s'):
              horizontalalignment='center',
              verticalalignment='center')    
     
-# DataFrame -> String -> String -> {color:String, show:String, xticks?:Boolean} -> SideEffects
+# DataFrame -> String -> String -> {color:String, show:String, xticks?:Boolean, vmin: Float, vmax: Float} -> SideEffects
 def plot_plate(dataframe, parameter, function, config):
     data = filter_rows(dataframe,'Function',function)
     coords = map(well_to_ij,data['Well Name'].values)
@@ -311,7 +311,13 @@ def plot_plate(dataframe, parameter, function, config):
     conditions = data['Condition'].values
     matrix,missing_coords = to_plate_layout(coords,values)
     
-    plt.imshow(matrix,interpolation='nearest',cmap=config['color'],aspect='auto');
+    plt.imshow(matrix,
+               interpolation='nearest',
+               cmap=config['color'],
+               aspect='auto',
+               vmin=config['vmin'], 
+               vmax=config['vmax']);
+    
     plot_plate_ticks(matrix,xticks=config['xticks?'])
     
     # Plot 'no data' for wells that don't have any data
@@ -341,4 +347,6 @@ def plot_plates(dataframe, parameter, function, color, show):
         plt.subplot(sub) 
         plot_plate(plate,parameter,function,{'color': color,
                                              'show': show,
-                                             'xticks?': i == len(plates)-1})
+                                             'xticks?': i == len(plates)-1,
+                                             'vmin': dataframe[parameter].min(),
+                                             'vmax': dataframe[parameter].max(),})
