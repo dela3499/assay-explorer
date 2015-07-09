@@ -330,43 +330,57 @@ def to_plate_layout(coords,vals):
         Any wells missing data are set to mean(vals). Also returns list of coords in plate that are missing data."""
     return ij_to_matrix(coords,
                         vals,
-                        np.mean(vals))
-
+                        np.nan)
+                        
 # [[a]] -> SideEffects
-def plot_plate_ticks(matrix):
+def plot_plate_ticks(matrix,xticks=True):
     xlabels = np.arange(matrix.shape[1]) + 1
     ylabels = 'abcdefghijklmnopqrstuvwxyz'.upper()[:len(matrix)]
-    plt.xticks(range(len(xlabels)),xlabels)
+    plt.xticks(range(len(xlabels)),xlabels) if xticks else plt.xticks([])
     plt.yticks(range(len(ylabels)),ylabels)
     
 # Int -> Int -> String -> SideEffects                
-def plot_plate_text(i,j,text):
-    plt.text(j,i,text,
+def plot_plate_text(i,j,text,format_string='%s'):
+    plt.text(j,i,format_string % text,
              horizontalalignment='center',
              verticalalignment='center')    
     
-# DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
+# DataFrame -> String -> String -> {color:String, show:String, xticks?:Boolean} -> SideEffects
 def plot_plate(dataframe, parameter, function, config):
     data = filter_rows(dataframe,'Function',function)
-    coords = map(well_to_ij,
-                 data['Well Name'].values)
-    matrix,missing_coords = to_plate_layout(coords,
-                                            data[parameter].values)
+    coords = map(well_to_ij,data['Well Name'].values)
+    values = data[parameter].values
+    conditions = data['Condition'].values
+    matrix,missing_coords = to_plate_layout(coords,values)
     
     plt.imshow(matrix,interpolation='nearest',cmap=config['color'],aspect='auto');
+    plot_plate_ticks(matrix,xticks=config['xticks?'])
     
-    plot_plate_ticks(matrix)
+    # Plot 'no data' for wells that don't have any data
     [plot_plate_text(i,j,'No data') for i,j in missing_coords]
-    [plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
+ 
+    # Label wells with values, conditions, or nothing (empty strings)
+    show = config['show']
+    vs = {'Conditions': [format_long_line(c,12) for c in conditions],
+          'Values': values,
+          'None': ['' for _ in values]}
+    formats = {'Conditions': '%s',
+               'Values': '%.2f',
+               'None': '%s'}
+    [plot_plate_text(i,j,v,format_string = formats[show]) \
+         for (i,j),v in zip(coords,vs[show])]
     
-# DataFrame -> String -> String -> {color:String, show:String} -> SideEffects
+    #[plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
+    
+# DataFrame -> String -> String -> String -> String -> SideEffects
 def plot_plates(dataframe, parameter, function, color, show):
     """ Plot each plate in given dataframe."""
     plates = map(snd,dataframe.groupby('Plate ID'))
     plt.figure(figsize=(17,7))
     subplots = gridspec.GridSpec(len(plates),1)
-    plt.subplots_adjust(hspace=0.54)
-    for plate,sub in zip(plates,subplots):
+    plt.subplots_adjust(hspace=0.0)
+    for i,(plate,sub) in enumerate(zip(plates,subplots)):
         plt.subplot(sub) 
-        plot_plate(plate,parameter,function,dict(color = color,
-                                                 show = show))    
+        plot_plate(plate,parameter,function,{'color': color,
+                                             'show': show,
+                                             'xticks?': i == len(plates)-1})
