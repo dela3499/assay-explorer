@@ -21,6 +21,12 @@ import re
 # TODO: some of these function can be removed, or added to some other smaller, more specific utils thing. Or maybe just moved to the bottom of this file. 
 # TODO: many of these functions lack type signatures and docstrings. Add them. 
 
+# DataFrame -> String -> (a | [a] | Series[a])
+def add_col(dataframe,colname,values):
+    "Add column to dataframe with given values."
+    dataframe[colname] = values
+    return dataframe
+
 def filter_and_drop(df,col,val):
     """ Return DataFrame with rows that match filter. Filter column is dropped. """
     return df[df[col] == val].drop([col],axis=1)
