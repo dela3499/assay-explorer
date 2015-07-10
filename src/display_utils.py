@@ -354,5 +354,5 @@ def plot_plates(dataframe, parameter, function, color, show):
         plot_plate(plate,parameter,function,{'color': color,
                                              'show': show,
                                              'xticks?': i == len(plates)-1,
-                                             'vmin': dataframe[parameter].min(),
-                                             'vmax': dataframe[parameter].max(),})
+                                             'vmin': filter_rows(dataframe,'Function',function)[parameter].min(),
+                                             'vmax': filter_rows(dataframe,'Function',function)[parameter].max()})
