@@ -3,15 +3,15 @@ import pandas as pd
 import numpy as np
 from toolz import thread_first,\
                   thread_last,\
-                  juxt
-from toolz.curried import map
+                  juxt,\
+                  curry
 execfile('../src/utils.py')                    
 from cStringIO import StringIO
 import uuid
 
 curry_funcs(['pd.read_csv',
              'df.dropna',
-             'df.rename'])                    
+             'df.rename'])           
                     
 def mapdict(f,d):
     return [f(k,v) for k,v in d.iteritems()]

@@ -10,6 +10,11 @@ from toolz import thread_first,\
 def identity(x):
     return x
 
+# (a -> b) -> [a] -> [b]
+@curry
+def map(f,x):
+    return [f(xi) for xi in x]
+
 # a -> Int -> [a]
 def repeat(x,n):
     """ Return list with x repeated n times. """
