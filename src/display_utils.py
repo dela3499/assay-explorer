@@ -35,8 +35,11 @@ def get_means(df):
     """ Get means from data. """
     return filter_and_drop(df,'Function','avg')
 
-def normalize_columns(df):
+@curry
+def normalize_columns(df,fillna=False):
     """ Return new DataFrame, where the norm of each column is the unit value. """
+    if fillna :
+        df = df.fillna(0)
     return df.apply(lambda x: x.values/np.linalg.norm(x.values))
 
 # Need to improve this chunk of code. It's important, but difficult to read. 
