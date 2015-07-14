@@ -15,6 +15,12 @@ def identity(x):
 def map(f,x):
     return [f(xi) for xi in x]
 
+@curry
+# (Int -> a -> b) -> [a] -> [b]
+def indexed_map(f,x):
+    """ Map a function over a list, including the index as the first argument. """
+    return [f(i,xi) for i,xi in zip(range(len(x)),x)]
+
 # a -> Int -> [a]
 def repeat(x,n):
     """ Return list with x repeated n times. """
