@@ -40,6 +40,7 @@ def get_cell_data(c):
     return thread_first(c['path'],
                         open,
                         file.read,
+                        (str.replace,'\r',''),
                         (str.split,c['plate_delimiter']),
                         tail,
                         map(StringIO),
