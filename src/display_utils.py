@@ -122,7 +122,7 @@ def add_condition_cols(df):
 
 def filter_rows(df,col,val):
     """ Return new DataFrame where the values in col match val. 
-        col may be a single value or a list of values. """
+        val may be a single value or a list of values. """
     if type(val) == list:
         return df[df[col].isin(val)]
     else:
