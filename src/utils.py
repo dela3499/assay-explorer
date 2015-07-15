@@ -15,6 +15,11 @@ def identity(x):
 def map(f,x):
     return [f(xi) for xi in x]
 
+# (a -> b -> c) -> [a] -> [b] -> [c]
+@curry
+def map2(f,x,y):
+    return [f(xi,yi) for xi,yi in zip(x,y)]
+
 @curry
 # (Int -> a -> b) -> [a] -> [b]
 def indexed_map(f,x):
@@ -43,7 +48,9 @@ def curry_funcs(funcs):
 # a -> (a -> [b] -> a) -> [[b]] -> a
 def thread_first_repeat(x,f,args):
     """ Execute thread first with f applied once for each set of args. """
-    return thread_first(x,*map(lambda x,y: tuple([x] + y),
+    # Need to improve the documentation for this function, and maybe change its implementation.
+    # It's really confusing. Try using foldl. I think that's the better option.
+    return thread_first(x,*map2(lambda x,y: tuple([x] + y),
                                repeat(f,len(args)),
                                args))
 
