@@ -13,7 +13,6 @@ def get_well_cell_counts(dataframe):
                                       "Well Name": x[0][1],
                                       "Cell Count": len(x[1]),
                                       "Condition": x[1]['Condition'].iloc[0]}),
-                      list,
                       df)
 
 # DataFrame -> WellSummaryConfig -> DataFrame
