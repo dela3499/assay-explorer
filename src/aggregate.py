@@ -15,6 +15,8 @@ def get_well_cell_counts(dataframe):
                                       "Condition": x[1]['Condition'].iloc[0]}),
                       df)
 
+# TODO: think about generating summary statistics on the fly, rather than generating them all at once here. I think that might end up being simpler overall. 
+
 # DataFrame -> [String] -> DataFrame
 def summarize_wells(dataframe,groups):
     parameters = groupby_and_summarize(dataframe,groups,funcs,fnames)
