@@ -1,12 +1,15 @@
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
+import json
 import uuid
 import re
-from toolz import thread_first,\
-                  thread_last,\
-                  curry
-
+from toolz import \
+    thread_first,\
+    thread_last,\
+    curry,\
+    assoc
+                    
 # a -> a
 def identity(x):
     return x
@@ -174,6 +177,53 @@ def is_empty(x):
 """ Return True if every element of a is in list b. """
 """ Use: list_a |are_all_in| list_b """
 are_all_in = Infix(lambda a,b: is_empty(set(a).difference(set(b))))
+
+# String -> {a:b} -> SideEffects[File]
+@curry
+def set_model(filepath,k,v):
+    """ Save key k and value v to json file. """
+    f = open(filepath,'r+')
+    fstring = f.read()
+    try:
+        data = json.loads(fstring)
+    except:
+        data = dict()
+    f.close()
+    g = open(filepath,'w+')
+    new_data = assoc(data,k,v)
+    new_json_data = json.dumps(new_data)
+    g.write(new_json_data)
+    g.close()
+    
+# String -> Widget -> a -> SideEffects[File]
+@curry
+def persist_widget_value(filepath,widget,key):
+    """ Save widget value to key in JSON file. """
+    widget.on_trait_change(lambda name,value: set_model(filepath,key,value),'value')
+
+# {a:b} -> a -> b
+@curry
+def maybe_get(d,k,v):
+    """ Given a dictionary d, return value corresponding to key k. 
+        If k is not present in dictionary, return v. """
+    try:
+        return d[k]
+    except:
+        return v    
+    
+# String -> a -> b
+@curry
+def maybe_get_model(filepath,k,v):
+    """ Try to load json file at filepath and return value associated with key k.
+        If this fails (file isn't present or key is absent), then return v. """
+    try: 
+        f = open(filepath)
+        fstring = f.read()
+        data = json.loads(fstring)
+        f.close()
+        return data[k]
+    except:
+        return v
 
 # DataFrame -> String -> [String] -> [String] -> DataFrame
 def normalize_by_division(dataframe,newcol,numerator_cols,denominator_cols):
