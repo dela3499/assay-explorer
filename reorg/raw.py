@@ -1,3 +1,4 @@
+from cStringIO import StringIO
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
@@ -5,13 +6,18 @@ from toolz import thread_first,\
                   thread_last,\
                   juxt,\
                   curry
-execfile('../src/utils.py')                    
-from cStringIO import StringIO
-import uuid
-
+from utils import curry_funcs,\
+                  identity,\
+                  map,\
+                  drop_matching_columns,\
+                  add_normalized_columns,\
+                  generate_sid,\
+                  mapdict,\
+                  tail
+            
 curry_funcs(['pd.read_csv',
              'df.dropna',
-             'df.rename'])           
+             'df.rename'])
 
 # String -> String
 def rename_column(col):
@@ -63,15 +69,6 @@ cell_config = dict(
     colrename = rename_column,
     check = identity
     )
-
-def mapdict(f,d):
-    return [f(k,v) for k,v in d.iteritems()]
-
-def tail(x):
-    return x[1:]
-
-def generate_sid():
-    return str(uuid.uuid4()).split('-')[-1]
 
 def create_well_df(cell_dict):
     return thread_last(cell_dict,

@@ -1,6 +1,7 @@
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
+import uuid
 import re
 from toolz import thread_first,\
                   thread_last,\
@@ -20,8 +21,8 @@ def map(f,x):
 def map2(f,x,y):
     return [f(xi,yi) for xi,yi in zip(x,y)]
 
-@curry
 # (Int -> a -> b) -> [a] -> [b]
+@curry
 def indexed_map(f,x):
     """ Map a function over a list, including the index as the first argument. """
     return [f(i,xi) for i,xi in zip(range(len(x)),x)]
@@ -38,7 +39,24 @@ def reset_index(dataframe):
 # (a,b) -> b
 snd = lambda x: x[1]  
 
+# (a -> b -> c) -> {a:b} -> [c] 
+@curry
+def mapdict(f,d):
+    """ Map f over key-value pairs of dictionary d. """
+    return [f(k,v) for k,v in d.iteritems()]
+
+# [a] -> [a]
+def tail(x):
+    """ Return list x without first element. """
+    return x[1:]
+
+# Random -> Int
+def generate_sid():
+    return str(uuid.uuid4()).split('-')[-1]
+
+# [String] -> SideEffect
 def curry_funcs(funcs):
+    """ Curry each function in provided list. """
     for func in funcs:
       try: 
         exec('global {}; {} = curry({})'.format(*[func]*3))
@@ -103,33 +121,6 @@ def get_string_columns(dataframe):
     """ Return columns with string values."""
     return [col for col in dataframe.columns \
               if dataframe[col].dtype == 'object']
-
-
-
-#   # Add cell count column
-#   sizes = df.groupby('Well Name')\
-#     .size()\
-#     .reset_index()\
-#     .rename(columns={0:'Cell Count'})
-
-#   counts = pd.merge(conds,
-#                     sizes,
-#                     on='Well Name')\
-#               .groupby('Condition')\
-#               .describe()
-  
-#   raw_summary = pd.merge(raw_summary,
-#                          counts,
-#                          left_index=True,
-#                          right_index=True)
-
-# ###
-#   counts = df.groupby('Well Name')\
-#     .size()\
-#     .reset_index()\
-#     .rename(columns={0:'Cell Count'})
-
-#   counts['Function'] = 'mean'
 
 # DataFrame -> [(DataFrame -> Series)] -> [String] -> DataFrame
 def multiaggregate(dataframe,funcs,fnames):
