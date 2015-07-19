@@ -1,46 +1,28 @@
 import pandas as pd
 from pandas import DataFrame as DF
-
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn.apionly as sns
-
-from scipy.cluster.hierarchy import linkage, leaves_list, dendrogram
-
-from toolz import pipe,thread_first, curry, frequencies
-
-from IPython.html.widgets import interact, interactive, fixed
 from IPython.display import display
 import IPython.html.widgets as widgets
-from IPython.utils.traitlets import link as traitlink
+from scipy.cluster.hierarchy import linkage,\
+                                    leaves_list,\
+                                    dendrogram
+from IPython.html.widgets import interact,\
+                                 interactive,\
+                                 fixed
+from toolz import pipe,\
+                  thread_first,\
+                  curry,\
+                  frequencies
+from utils import concatenate
 
-import re
 
 # TODO: many of these functions are quite general and may be move to utils.
 # TODO: some of these function can be removed, or added to some other smaller, more specific utils thing. Or maybe just moved to the bottom of this file. 
 # TODO: many of these functions lack type signatures and docstrings. Add them. 
-
-# DataFrame -> String -> (a | [a] | Series[a])
-def add_col(dataframe,colname,values):
-    "Add column to dataframe with given values."
-    dataframe[colname] = values
-    return dataframe
-
-def filter_and_drop(df,col,val):
-    """ Return DataFrame with rows that match filter. Filter column is dropped. """
-    return df[df[col] == val].drop([col],axis=1)
-
-def get_means(df):
-    """ Get means from data. """
-    return filter_and_drop(df,'Function','avg')
-
-@curry
-def normalize_columns(df,fillna=False):
-    """ Return new DataFrame, where the norm of each column is the unit value. """
-    if fillna :
-        df = df.fillna(0)
-    return df.apply(lambda x: x.values/np.linalg.norm(x.values))
 
 # Need to improve this chunk of code. It's important, but difficult to read. 
 
@@ -202,11 +184,6 @@ def map(f,x):
 def inc(x):
     """ Increment the value of x. """
     return x + 1
-
-# TODO: change this function - add new variable, and maybe have a look at the summary code. 
-def get_params(df):
-    cols = df.columns.tolist()
-    return sorted([col for col in cols if col not in ['Plate ID','Plate Name','Date','Well Name', 'Condition', 'Base', 'Dose', 'Unit', 'Drug','Function']])
 
 # [a] -> a
 def snd(x):

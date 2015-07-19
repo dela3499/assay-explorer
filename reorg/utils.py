@@ -32,6 +32,16 @@ def repeat(x,n):
     """ Return list with x repeated n times. """
     return [x for _ in range(n)]
 
+# [[a]] -> [a]
+def concatenate(x):
+    "Concatenate sublists into single list."
+    if len(x) == 1:
+        return x[0]
+    elif len(x) == 2:
+        return x[0] + x[1]
+    else: 
+        return x[0] + x[1] + concatenate(x[2:])
+
 # DataFrame -> DataFrame
 def reset_index(dataframe):
     return dataframe.reset_index(drop=True)
@@ -71,6 +81,23 @@ def thread_first_repeat(x,f,args):
     return thread_first(x,*map2(lambda x,y: tuple([x] + y),
                                repeat(f,len(args)),
                                args))
+
+# DataFrame -> String -> (a | [a] | Series[a])
+def add_col(dataframe,colname,values):
+    "Add column to dataframe with given values."
+    dataframe[colname] = values
+    return dataframe
+
+def filter_and_drop(df,col,val):
+    """ Return DataFrame with rows that match filter. Filter column is dropped. """
+    return df[df[col] == val].drop([col],axis=1)
+
+@curry
+def normalize_columns(df,fillna=False):
+    """ Return new DataFrame, where the norm of each column is the unit value. """
+    if fillna :
+        df = df.fillna(0)
+    return df.apply(lambda x: x.values/np.linalg.norm(x.values))
 
 # String -> [Regex] -> Boolean
 def matches_any_pattern(s,patterns):
