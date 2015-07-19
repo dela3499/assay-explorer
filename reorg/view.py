@@ -4,20 +4,28 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import seaborn.apionly as sns
 from IPython.display import display
 import IPython.html.widgets as widgets
-from scipy.cluster.hierarchy import linkage,\
-                                    leaves_list,\
-                                    dendrogram
-from IPython.html.widgets import interact,\
-                                 interactive,\
-                                 fixed
-from toolz import pipe,\
-                  thread_first,\
-                  curry,\
-                  frequencies
-from utils import concatenate
+from scipy.cluster.hierarchy import \
+    linkage,\
+    leaves_list,\
+    dendrogram
+from IPython.html.widgets import \
+    interact,\
+    interactive,\
+    fixed
+from toolz import \
+    pipe,\
+    thread_first,\
+    curry,\
+    frequencies
+from utils import \
+    concatenate,\
+    snd,\
+    filter_rows,\
+    unzip,\
+    are_all_in,\
+    format_long_line
 
 
 # TODO: many of these functions are quite general and may be move to utils.
@@ -102,14 +110,6 @@ def add_condition_cols(df):
         new_df[field] = df['Condition'].map(lambda c: parse_condition(c)[field])
     return move_columns(new_df,[['Base',2],['Dose',3],['Unit',4],['Drug',5]])
 
-def filter_rows(df,col,val):
-    """ Return new DataFrame where the values in col match val. 
-        val may be a single value or a list of values. """
-    if type(val) == list:
-        return df[df[col].isin(val)]
-    else:
-        return df[df[col] == val]
-
 def get_drugs_with_multiple_doses(df):
     """ Return list of drugs that have multiple entries. """
     """ TODO: add check for unique doses, rather than just multiple entries. """
@@ -152,76 +152,6 @@ def dose_plot(df,err,cols,scale='linear'):
                 label('Dose ({})'.format(data.Unit.values[0]), col,title,fontsize = 15)
 
                 plt.legend(df['Base'].unique(), loc = 0)
-
-def findall(s,pattern):
-    """ Return list of indices where pattern occurs in s. """
-    return [m.start() for m in re.finditer(pattern, s)]
-
-def get_split_location(s):
-    """ Return location with space nearest middle of string."""
-    n = float(len(s))
-    spaces = findall(s,' ')
-    return spaces[np.argmin([np.abs((x/n) - 0.5) for x in spaces])]
-
-def split_line(s):
-    """ Return new string, where space nearest center has been replaced by newline. """
-    x = get_split_location(s)
-    return s[:x] + '\n' + s[x+1:]
-
-def format_long_line(s,n):
-    """ If s is longer than n, try to break line in two, """
-    if len(s) > n:
-        return split_line(s)
-    else:
-        return s
-    
-@curry
-def map(f,x):
-    """ Apply f to every element in x and return the result. """
-    return [f(xi) for xi in x]   
-
-# Num -> Num
-def inc(x):
-    """ Increment the value of x. """
-    return x + 1
-
-# [a] -> a
-def snd(x):
-    """ Return second element of list. """
-    return x[1]
-
-# [(a,b)] -> [[a],[b]]
-def unzip(x):
-    """ Undo the zip operation. """
-    return [[xi[i] for xi in x] for i in range(len(x[0]))]
-
-# [Num] -> Num
-def vrange(x):
-    """ Return range of values in x. """
-    return max(x) - min(x)
-
-# (a -> b -> c) -> (a -> b -> c)
-class Infix:
-    def __init__(self, function):
-        self.function = function
-    def __ror__(self, other):
-        return Infix(lambda x, self=self, other=other: self.function(other, x))
-    def __or__(self, other):
-        return self.function(other)
-    def __rlshift__(self, other):
-        return Infix(lambda x, self=self, other=other: self.function(other, x))
-    def __rshift__(self, other):
-        return self.function(other)
-    def __call__(self, value1, value2):
-        return self.function(value1, value2)
-    
-# [a] -> Boolean
-def is_empty(x):
-    return len(x) == 0
-
-# [a] -> [a] -> Boolean
-""" Return True if every element of a is in list b. """
-are_all_in = Infix(lambda a,b: is_empty(set(a).difference(set(b))))
 
 # [(Int,Int)] -> (Int,Int)
 def get_shape_from_coords(coords):

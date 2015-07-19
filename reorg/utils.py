@@ -14,6 +14,7 @@ def identity(x):
 # (a -> b) -> [a] -> [b]
 @curry
 def map(f,x):
+    """ Apply f to every element in x and return the result. """
     return [f(xi) for xi in x]
 
 # (a -> b -> c) -> [a] -> [b] -> [c]
@@ -45,9 +46,6 @@ def concatenate(x):
 # DataFrame -> DataFrame
 def reset_index(dataframe):
     return dataframe.reset_index(drop=True)
-
-# (a,b) -> b
-snd = lambda x: x[1]  
 
 # (a -> b -> c) -> {a:b} -> [c] 
 @curry
@@ -111,6 +109,72 @@ def drop_matching_columns(dataframe,patterns):
     						if matches_any_pattern(col,patterns)]
     return dataframe.drop(matching_columns,axis=1)
 
+def findall(s,pattern):
+    """ Return list of indices where pattern occurs in s. """
+    return [m.start() for m in re.finditer(pattern, s)]
+
+def get_split_location(s):
+    """ Return location with space nearest middle of string."""
+    n = float(len(s))
+    spaces = findall(s,' ')
+    return spaces[np.argmin([np.abs((x/n) - 0.5) for x in spaces])]
+
+def split_line(s):
+    """ Return new string, where space nearest center has been replaced by newline. """
+    x = get_split_location(s)
+    return s[:x] + '\n' + s[x+1:]
+
+def format_long_line(s,n):
+    """ If s is longer than n, try to break line in two, """
+    if len(s) > n:
+        return split_line(s)
+    else:
+        return s
+
+# Num -> Num
+def inc(x):
+    """ Increment the value of x. """
+    return x + 1
+
+# [a] -> a
+def snd(x):
+    """ Return second element of list. """
+    return x[1]
+
+# [(a,b)] -> [[a],[b]]
+def unzip(x):
+    """ Undo the zip operation. """
+    return [[xi[i] for xi in x] for i in range(len(x[0]))]
+
+# [Num] -> Num
+def vrange(x):
+    """ Return range of values in x. """
+    return max(x) - min(x)
+
+# (a -> b -> c) -> (a -> b -> c)
+class Infix:
+    def __init__(self, function):
+        self.function = function
+    def __ror__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __or__(self, other):
+        return self.function(other)
+    def __rlshift__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __rshift__(self, other):
+        return self.function(other)
+    def __call__(self, value1, value2):
+        return self.function(value1, value2)
+    
+# [a] -> Boolean
+def is_empty(x):
+    return len(x) == 0
+
+# [a] -> [a] -> Boolean
+""" Return True if every element of a is in list b. """
+""" Use: list_a |are_all_in| list_b """
+are_all_in = Infix(lambda a,b: is_empty(set(a).difference(set(b))))
+
 # DataFrame -> String -> [String] -> [String] -> DataFrame
 def normalize_by_division(dataframe,newcol,numerator_cols,denominator_cols):
     """ Return new DataFrame, where newcol = sum(numerator_cols)/sum(denominator_cols)"""
@@ -119,6 +183,14 @@ def normalize_by_division(dataframe,newcol,numerator_cols,denominator_cols):
     new_df = dataframe.copy()
     new_df[newcol] = numerator / denominator
     return new_df    
+
+def filter_rows(df,col,val):
+    """ Return new DataFrame where the values in col match val. 
+        val may be a single value or a list of values. """
+    if type(val) == list:
+        return df[df[col].isin(val)]
+    else:
+        return df[df[col] == val]
 
 # type NormalizeConfig = [[String,[String],[String]]]
 # DataFrame -> NormalizeConfig -> DataFrame
