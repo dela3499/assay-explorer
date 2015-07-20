@@ -1,9 +1,11 @@
+from collections import OrderedDict
 from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
 import json
 import uuid
 import re
+import os
 from toolz import \
     thread_first,\
     thread_last,\
@@ -140,6 +142,11 @@ def inc(x):
     return x + 1
 
 # [a] -> a
+def fst(x):
+    """ Return first element of list. """
+    return x[0]
+
+# [a] -> a
 def snd(x):
     """ Return second element of list. """
     return x[1]
@@ -245,9 +252,10 @@ def filter_rows(df,col,val):
 # type NormalizeConfig = [[String,[String],[String]]]
 # DataFrame -> NormalizeConfig -> DataFrame
 def add_normalized_columns(dataframe,config):
-    return thread_first_repeat(dataframe,
-                               normalize_by_division,
-                               config)
+    return thread_first_repeat(
+        dataframe,
+        normalize_by_division,
+        config)
 
 # Series {String:[a]} -> DataFrame {value:[a],label:[String]}
 def header_to_column(series):
@@ -294,10 +302,61 @@ def summarize(dataframe,funcs = [],fnames = []):
 
 # GroupBy -> [(DataFrame -> Series)] -> [String] -> DataFrame
 def groupby_and_summarize(dataframe,col,funcs = [],fnames = []):
-    return thread_last(dataframe,
-                       lambda x: x.groupby(col),
-                       (map, snd),
-                       (map,summarize(funcs = funcs, 
-                                      fnames = fnames)),
-                       pd.concat,
-                       reset_index)
+    return thread_last(
+        dataframe,
+        lambda x: x.groupby(col),
+        (map, snd),
+        (map,summarize(funcs = funcs, 
+                       fnames = fnames)),
+        pd.concat,
+        reset_index)
+
+# String -> String -> [String]
+def gen_filenames(path,name):
+    """ Given a path and a stripped filename, generate a list of the associated full filenames. """
+    suffixes = {'wells': '-wells.csv',
+                'conditions': '-conditions.csv',
+                'cells': '.csv'}
+    return [os.path.join(path,
+
+map(lambda suffix: os.path.join(path,name + suffix),suffixes)
+
+# (String,String) -> String
+def format_filename(pair):
+    """ Given a pair of (directory,filename)
+        return a string with the date and filename."""
+    directory = pair[0]
+    filename = pair[1]
+    return thread_first(
+        directory,
+        os.path.split,
+        snd,
+        lambda date: "{} {}".format(date,filename))
+
+# (String,[String],[String]) -> [(String,String)]
+def get_dataset_in_dir(dir_triple):
+    """ Given a triple of (path,subdirectories,files), 
+        return list of tuples of (directory,filename)."""
+    directory = dir_triple[0]
+    filenames = dir_triple[2]
+    return thread_first(
+        filenames,
+        map(lambda filename: filename.rstrip('-well.csv').rstrip('-conditions.csv')),
+        set,
+        list,
+        map(lambda trimmed_filename: (directory,trimmed_filename)))  
+
+# String -> {String:(String,String)}
+def get_files(path):
+    """ Given a path, recursively find all files beneath it, and return 
+        a dictionary with a display string as the key and a tuple of 
+        (path,stripped filename). """
+    return thread_first(
+        path,
+        os.walk,
+        list,
+        map(get_dataset_in_dir),
+        concatenate,
+        map(lambda pair: (format_filename(pair),pair)),
+        lambda x: sorted(x, key = fst, reverse=True),
+        OrderedDict)
