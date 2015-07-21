@@ -55,8 +55,14 @@ def reset_index(dataframe):
 # (a -> b -> c) -> {a:b} -> [c] 
 @curry
 def mapdict(f,d):
-    """ Map f over key-value pairs of dictionary d. """
+    """ Map f over list of key-value pairs of dictionary d. """
     return [f(k,v) for k,v in d.iteritems()]
+
+# (b -> c) -> {a:b} -> {a:c}
+@curry
+def mapvals(f,d):
+    """ Return dictionary d, applying f to each value. """
+    return {key:f(value) for key,value in d.iteritems()}
 
 # [a] -> [a]
 def tail(x):
