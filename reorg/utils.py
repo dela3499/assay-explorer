@@ -317,9 +317,7 @@ def gen_filenames(path,name):
     suffixes = {'wells': '-wells.csv',
                 'conditions': '-conditions.csv',
                 'cells': '.csv'}
-    return [os.path.join(path,
-
-map(lambda suffix: os.path.join(path,name + suffix),suffixes)
+    return map(lambda suffix: os.path.join(path,name + suffix),suffixes)
 
 # (String,String) -> String
 def format_filename(pair):
