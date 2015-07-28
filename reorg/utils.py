@@ -1,16 +1,27 @@
-from collections import OrderedDict
-from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
 import json
 import uuid
 import re
 import os
+
+from StringIO import \
+    StringIO
+
 from toolz import \
+    partitionby,\
     thread_first,\
     thread_last,\
     curry,\
     assoc
+    
+from collections import \
+    OrderedDict
+    
+from pandas import \
+    DataFrame as df
+
+
                     
 # a -> a
 def identity(x):
@@ -365,3 +376,54 @@ def get_files(path):
         map(lambda pair: (format_filename(pair),pair)),
         lambda x: sorted(x, key = fst, reverse=True),
         OrderedDict)
+
+# String -> String -> Boolean
+@curry
+def string_is_only(string,character):
+    """ Return True if string is made up of only the given character. """
+    chars = list(set(list(string)))
+    return len(chars) == 1 and chars[0] == character
+
+# String -> String
+def readfile(path):
+    """ Return contents of file at provided path. """
+    f = open(path)
+    data = f.read()
+    f.close()
+    return data
+
+# String -> DataFrame['Well Name',Parameter]
+def parse_label_group(string):
+    """ Takes string containing all data for one field, and creates a 
+        tidy dataframe with two columns: 'Well Name', and field. """
+    letters = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    raw_dataframe = pd.read_csv(StringIO(string))
+    label_name = raw_dataframe.columns[0]
+    return thread_last(
+        raw_dataframe.values[:,1:],
+        lambda values: df(values,columns = map(str,range(1,values.shape[1] + 1))),
+        lambda dataframe: add_col(dataframe,'Row',pd.Series(letters[:len(dataframe)])),
+        lambda dataframe: pd.melt(dataframe,id_vars=['Row']),
+        lambda dataframe: add_col(dataframe,'Well Name',dataframe['Row'] + dataframe['variable']),
+        lambda dataframe: dataframe.drop(['Row','variable'],axis=1),
+        lambda dataframe: dataframe.rename(columns={'value': label_name})
+        )
+
+# String -> DataFrame
+def get_layout_info(path):
+    """ Given a path to a file with proper format (see below), return a dataframe 
+        with 'Well Name' column and additional columns for each provided parameter.
+        
+        Format: Parameter Name, 1, 2 ...
+                A, Value, Value ...
+                B, Value, Value ...
+                ...   """
+    return thread_last(
+        path,
+        readfile,
+        lambda string: string.replace('\r','').split('\n'),
+        (partitionby, lambda line: string_is_only(line,',')),
+        (filter,lambda group: len(group) > 1 and not string_is_only(group[0],',')),
+        (map,lambda strings: str.join('\n',strings)),
+        (map,parse_label_group),
+        (reduce,lambda left,right: pd.merge(left,right,on='Well Name')))
