@@ -84,6 +84,11 @@ def tail(x):
 def generate_sid():
     return str(uuid.uuid4()).split('-')[-1]
 
+# DataFrame -> DataFrame -> DataFrame
+def df_difference(a,b):
+    """ Return any rows in a not present in b. """
+    return a.loc[a[~a.isin(b)].dropna(how='all').index]
+
 # [String] -> SideEffect
 def curry_funcs(funcs):
     """ Curry each function in provided list. """
