@@ -207,6 +207,14 @@ def is_empty(x):
 """ Use: list_a |are_all_in| list_b """
 are_all_in = Infix(lambda a,b: is_empty(set(a).difference(set(b))))
 
+# Number -> Int
+def stringify(n,num_chars):
+    """ Return string version of number with specified number of characters. 
+        Prefix with zeros as required. (e.g. stringify(12,4) == '0012'). """
+    string_n = str(n)
+    prefix_zeros = ''.join(['0']*(num_chars - len(string_n)))
+    return prefix_zeros + string_n
+
 # String -> {a:b} -> SideEffects[File]
 @curry
 def set_model(filepath,k,v):
@@ -406,7 +414,7 @@ def parse_label_group(string):
     label_name = raw_dataframe.columns[0]
     return thread_last(
         raw_dataframe.values[:,1:],
-        lambda values: df(values,columns = map(str,range(1,values.shape[1] + 1))),
+        lambda values: df(values,columns = map(lambda num: stringify(num,2),range(1,values.shape[1] + 1))),
         lambda dataframe: add_col(dataframe,'Row',pd.Series(letters[:len(dataframe)])),
         lambda dataframe: pd.melt(dataframe,id_vars=['Row']),
         lambda dataframe: add_col(dataframe,'Well Name',dataframe['Row'] + dataframe['variable']),
