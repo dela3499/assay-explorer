@@ -219,7 +219,7 @@ def stringify(n,num_chars):
 @curry
 def set_model(filepath,k,v):
     """ Save key k and value v to json file. """
-    f = open(filepath,'r+')
+    f = open(filepath,'wr+')
     fstring = f.read()
     try:
         data = json.loads(fstring)
