@@ -440,3 +440,17 @@ def get_layout_info(path):
         (map,lambda strings: str.join('\n',strings)),
         (map,parse_label_group),
         (reduce,lambda left,right: pd.merge(left,right,on='Well Name')))
+
+# String -> String
+def from_file(filename):
+    """ Return contents of selected file. """
+    f = open(filename)
+    data = f.read()
+    f.close()
+    return data
+
+# String -> String -> SideEffect[File]
+def to_file(filename,content):
+    """ Save content to file. """
+    f = open(filename,'w+')
+    f.write(content)
