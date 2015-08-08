@@ -392,18 +392,10 @@ def get_files(path):
 
 # String -> String -> Boolean
 @curry
-def string_is_only(string,character):
+def string_only_contains(string,character):
     """ Return True if string is made up of only the given character. """
     chars = list(set(list(string)))
     return len(chars) == 1 and chars[0] == character
-
-# String -> String
-def readfile(path):
-    """ Return contents of file at provided path. """
-    f = open(path)
-    data = f.read()
-    f.close()
-    return data
 
 # String -> DataFrame['Well Name',Parameter]
 def parse_label_group(string):
@@ -423,20 +415,23 @@ def parse_label_group(string):
         )
 
 # String -> DataFrame
-def get_layout_info(path):
+def get_layout_data(path):
     """ Given a path to a file with proper format (see below), return a dataframe 
         with 'Well Name' column and additional columns for each provided parameter.
         
         Format: Parameter Name, 1, 2 ...
                 A, Value, Value ...
                 B, Value, Value ...
+        Notes: '\r' is present in csv output on windows (or google docs) and can confuse pandas `read_csv` function.
+               Algorithm partitions by whether row is empty (each section of data should be separated by a blank line), 
+                 then filters out groups where row is empty (text of row contains only commas).
                 ...   """
     return thread_last(
         path,
-        readfile,
+        from_file,
         lambda string: string.replace('\r','').split('\n'),
-        (partitionby, lambda line: string_is_only(line,',')),
-        (filter,lambda group: len(group) > 1 and not string_is_only(group[0],',')),
+        (partitionby, lambda line: string_only_contains(line,',')),
+        (filter,lambda group: not string_only_contains(group[0],',')),
         (map,lambda strings: str.join('\n',strings)),
         (map,parse_label_group),
         (reduce,lambda left,right: pd.merge(left,right,on='Well Name')))
@@ -454,3 +449,20 @@ def to_file(filename,content):
     """ Save content to file. """
     f = open(filename,'w+')
     f.write(content)
+    
+# String -> String -> Boolean
+@curry
+def exists_at_path(path,entity):
+    """ Return True if entity (file or folder) exists
+        in directory at specified path. """
+    full_path = os.path.join(path,entity)
+    return os.path.exists(full_path)    
+
+# DataFrame -> {k:v} -> DataFrame
+def add_dict_to_dataframe(dataframe,my_dict):
+    """ Return dataframe with new column for each key-value pair.
+        Values are repeated for all rows in a given column. """
+    d = dataframe.copy()
+    for k,v in my_dict.iteritems():
+        d[k] = v
+    return d

@@ -3,3 +3,5 @@
 *.pem
 *nohup*
 .ipynb_checkpoints
+node_modules/
+npm-debug.log
