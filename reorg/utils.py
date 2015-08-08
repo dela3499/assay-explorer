@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import locale
 import json
 import uuid
 import re
@@ -466,3 +467,15 @@ def add_dict_to_dataframe(dataframe,my_dict):
     for k,v in my_dict.iteritems():
         d[k] = v
     return d
+
+# (Series -> a) -> DataFrame -> [a]
+def maprows(f,dataframe):
+    """ Apply f to every row in dataframe and return list of results. """
+    return map(lambda i: f(dataframe.iloc[i]),
+               range(len(dataframe)))
+
+# Number -> String
+def format_num(n):
+    """ Print number with commas and such. """
+    locale.setlocale(locale.LC_ALL, '')
+    return locale.format("%d", n, grouping=True)
