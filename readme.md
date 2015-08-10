@@ -4,13 +4,15 @@
 
 Summary:
 
-1. Create `data.zip` file like [example]().
+1. Create `data.zip` file like [example](http://45.55.10.127:8080/edit/add-data/data.zip).
 
 2. Upload [here](http://45.55.10.127:8080/tree/add-data).
 
 3. Add it to the database [here](http://45.55.10.127:8080/notebooks/assay-explorer/reorg/upload-new-data.ipynb).
 
-To analyze the data from an experiment, you'll need to upload the raw data from the microscope, the layout of the plates, and some additional information about the experiment (who was responsible, when the data was collected, etc.)
+---
+
+_To analyze the data from an experiment, you'll need to upload the raw data from the microscope, the layout of the plates, and some additional information about the experiment (who was responsible, when the data was collected, etc.)_
 
 You'll need to wrap all this data up in CSV files in a zip file like [this example](). There's a nicely-formatted Excel spreadsheet there that you can use to generate the CSV files as well.
 
@@ -35,15 +37,15 @@ For every plate in your experiment, you'll create one row in a CSV file called m
 
 As you'll see in the example zip file, all this information is arranged like so in a file called `data.zip`:
 
-  /data.zip
-    metadata.csv
-    /Layouts
-      layout1.csv
-      layout2.csv
-    /Plates
-      plate1.csv
-      plate2.csv
-      plate3.csv
+    /data.zip
+      metadata.csv
+      /Layouts
+        layout1.csv
+        layout2.csv
+      /Plates
+        plate1.csv
+        plate2.csv
+        plate3.csv
 
 Once you've got your zip file ready, you can go [here](http://45.55.10.127:8080/tree/add-data) and click upload in the upper-right corner of the screen. If there's already a `data.zip` file there, you should delete it by clicking the checkbox beside the file and the clicking the red trash can that appears near the top of the screen.
 
