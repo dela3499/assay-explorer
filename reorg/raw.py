@@ -1,19 +1,28 @@
-from cStringIO import StringIO
-from pandas import DataFrame as df
 import pandas as pd
 import numpy as np
-from toolz import thread_first,\
-                  thread_last,\
-                  juxt,\
-                  curry
-from utils import curry_funcs,\
-                  identity,\
-                  map,\
-                  drop_matching_columns,\
-                  add_normalized_columns,\
-                  generate_sid,\
-                  mapdict,\
-                  tail
+
+from toolz import \
+    thread_first,\
+    thread_last,\
+    juxt,\
+    curry
+    
+from utils import \
+    curry_funcs,\
+    identity,\
+    map,\
+    drop_matching_columns,\
+    add_normalized_columns,\
+    generate_sid,\
+    mapdict,\
+    tail,\
+    from_file
+    
+from cStringIO import \
+    StringIO
+
+from pandas import \
+    DataFrame as df    
             
 curry_funcs(['pd.read_csv',
              'df.dropna',
@@ -53,6 +62,9 @@ def get_plate_data(path,c):
     """ Get plate data, drop empty columns, drop selected columns, 
         rename columns, add normalized columns. """
     return thread_first(path,
+                        from_file,
+                        (str.replace,'\r',''),
+                        StringIO,
                         pd.read_csv(delimiter=c['delimiter'], skiprows=c['skiprows']),
                         df.dropna(axis=1,how='all'),
                         (drop_matching_columns,c['dropcols']),

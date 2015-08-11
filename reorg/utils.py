@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import arrow
 import locale
 import json
 import uuid
@@ -22,7 +23,10 @@ from collections import \
 from pandas import \
     DataFrame as df
 
-
+# String -> Boolean
+def string_is_empty(string):
+    """ Return True if string is empty. """
+    return string == ''
                     
 # a -> a
 def identity(x):
@@ -430,12 +434,13 @@ def get_layout_data(path):
     return thread_last(
         path,
         from_file,
-        lambda string: string.replace('\r','').split('\n'),
-        (partitionby, lambda line: string_only_contains(line,',')),
-        (filter,lambda group: not string_only_contains(group[0],',')),
-        (map,lambda strings: str.join('\n',strings)),
-        (map,parse_label_group),
-        (reduce,lambda left,right: pd.merge(left,right,on='Well Name')))
+        split_on_newlines,
+        (map, lambda line: line.rstrip(',')),
+        (partitionby, string_is_empty),
+        (filter, lambda group: not string_is_empty(group[0])),
+        (map, lambda strings: str.join('\n', strings)),
+        (map, parse_label_group),
+        (reduce, lambda left, right: pd.merge(left, right, on = 'Well Name')))
 
 # String -> String
 def from_file(filename):
@@ -479,3 +484,25 @@ def format_num(n):
     """ Print number with commas and such. """
     locale.setlocale(locale.LC_ALL, '')
     return locale.format("%d", n, grouping=True)
+
+# Int -> String
+def format_timestamp(ts):
+    """ Return timestamp as date, with time passed in parentheses."""
+    time = arrow.get(ts).to('US/Pacific').format('MMMM DD, YYYY, h:mm a')
+    time_ago = arrow.get(ts).humanize()
+    return "{} ({})".format(time,time_ago)
+
+# String -> [String]
+def split_on_newlines(string):
+    """ Given a string which may contain \r, \n, or both, 
+        split on newlines so neither character is present in output. """
+    
+    r = '\r' in string
+    n = '\n' in string
+    
+    if r and n: 
+        return string.replace('\r','').split('\n')
+    elif r:
+        return string.split('\r')
+    else:
+        return string.split('\n')
