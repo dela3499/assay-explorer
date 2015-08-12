@@ -10,6 +10,12 @@ Summary:
 
 3. Add it to the database [here](http://45.55.10.127:8080/notebooks/assay-explorer/reorg/upload-new-data.ipynb).
 
+4. Set the cell phase thresholds [here](http://45.55.10.127:8080/notebooks/assay-explorer/reorg/set-cell-phase.ipynb#).
+
+5. Visualize the data [here](http://45.55.10.127:8080/notebooks/assay-explorer/reorg/vis.ipynb#).
+
+Note that [this](http://45.55.10.127:8080/tree/assay-explorer/reorg) is the main folder with these notebooks in it.
+
 ---
 
 _To analyze the data from an experiment, you'll need to upload the raw data from the microscope, the layout of the plates, and some additional information about the experiment (who was responsible, when the data was collected, etc.)_
