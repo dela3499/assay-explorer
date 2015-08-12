@@ -68,4 +68,5 @@ def get_plate_data(path,c):
                         pd.read_csv(delimiter=c['delimiter'], skiprows=c['skiprows']),
                         df.dropna(axis=1,how='all'),
                         (drop_matching_columns,c['dropcols']),
-                        df.rename(columns=c['colrename']))
+                        df.rename(columns=c['colrename']),
+                        (add_normalized_columns,c['normcols']))
