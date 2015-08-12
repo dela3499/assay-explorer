@@ -219,20 +219,20 @@ def plot_plate_text(i,j,text,format_string='%s'):
              horizontalalignment='center',
              verticalalignment='center')    
     
-# DataFrame -> String -> String -> {color:String, show:String, xticks?:Boolean, vmin: Float, vmax: Float} -> SideEffects
-def plot_plate(dataframe, parameter, function, config):
-    data = filter_rows(dataframe,'Function',function)
-    coords = map(well_to_ij,data['Well Name'].values)
+# DataFrame -> String -> {color:String, show:String, xticks?:Boolean, vmin: Float, vmax: Float} -> SideEffects
+def plot_plate(dataframe, parameter, config):
+    data = dataframe
+    coords = map(well_to_ij, data['Well Name'].values)
     values = data[parameter].values
     conditions = data['Condition'].values
-    matrix,missing_coords = to_plate_layout(coords,values)
+    matrix, missing_coords = to_plate_layout(coords, values)
     
     plt.imshow(matrix,
-               interpolation='nearest',
-               cmap=config['color'],
-               aspect='auto',
-               vmin=config['vmin'], 
-               vmax=config['vmax']);
+               interpolation = 'nearest',
+               cmap = config['color'],
+               aspect = 'auto',
+               vmin = config['vmin'], 
+               vmax = config['vmax']);
     
     plot_plate_ticks(matrix,xticks=config['xticks?'])
     
@@ -241,28 +241,31 @@ def plot_plate(dataframe, parameter, function, config):
  
     # Label wells with values, conditions, or nothing (empty strings)
     show = config['show']
-    vs = {'Conditions': [format_long_line(c,12) for c in conditions],
+    vs = {'Conditions': [format_long_line(c, 12) for c in conditions],
           'Values': values,
           'None': ['' for _ in values]}
     formats = {'Conditions': '%s',
                'Values': '%.2f',
                'None': '%s'}
-    [plot_plate_text(i,j,v,format_string = formats[show]) \
-         for (i,j),v in zip(coords,vs[show])]
+    [plot_plate_text(i, j, v, format_string = formats[show]) \
+         for (i, j), v in zip(coords, vs[show])]
     
     #[plt.gca().spines[loc].set_visible(False) for loc in ['top','bottom','left','right']]
     
 # DataFrame -> String -> String -> String -> String -> SideEffects
-def plot_plates(dataframe, parameter, function, color, show):
+def plot_plates(dataframe, parameter, color, show):
     """ Plot each plate in given dataframe."""
-    plates = map(snd,dataframe.groupby('Plate ID'))
-    plt.figure(figsize=(17,7))
-    subplots = gridspec.GridSpec(len(plates),1)
+    plates = map(snd, dataframe.groupby('Plate ID'))
+    plt.figure(figsize=(17, 7))
+    subplots = gridspec.GridSpec(len(plates), 1)
     plt.subplots_adjust(hspace=0.0)
-    for i,(plate,sub) in enumerate(zip(plates,subplots)):
+    for i, (plate, sub) in enumerate(zip(plates, subplots)):
         plt.subplot(sub) 
-        plot_plate(plate,parameter,function,{'color': color,
-                                             'show': show,
-                                             'xticks?': i == len(plates)-1,
-                                             'vmin': filter_rows(dataframe,'Function',function)[parameter].min(),
-                                             'vmax': filter_rows(dataframe,'Function',function)[parameter].max()})
+        plot_plate(
+            plate,
+            parameter,
+            {'color': color,
+             'show': show,
+             'xticks?': i == len(plates)-1,
+             'vmin': dataframe[parameter].min(),
+             'vmax': dataframe[parameter].max()})
