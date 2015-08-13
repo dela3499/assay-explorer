@@ -259,10 +259,7 @@ def maybe_get_model(filepath,k,v):
     """ Try to load json file at filepath and return value associated with key k.
         If this fails (file isn't present or key is absent), then return v. """
     try: 
-        f = open(filepath)
-        fstring = f.read()
-        data = json.loads(fstring)
-        f.close()
+        data = json.loads(from_file(filepath))
         return data[k]
     except:
         return v
