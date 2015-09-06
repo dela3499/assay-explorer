@@ -413,7 +413,8 @@ def parse_label_group(string):
         lambda dataframe: pd.melt(dataframe,id_vars=['Row']),
         lambda dataframe: add_col(dataframe,'Well Name',dataframe['Row'] + dataframe['variable']),
         lambda dataframe: dataframe.drop(['Row','variable'],axis=1),
-        lambda dataframe: dataframe.rename(columns={'value': label_name})
+        lambda dataframe: dataframe.rename(columns={'value': label_name}),
+        lambda dataframe: dataframe[['Well Name', label_name]]
         )
 
 # String -> DataFrame
