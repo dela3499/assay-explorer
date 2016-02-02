@@ -9,7 +9,11 @@ import os
 
 from StringIO import \
     StringIO
-
+    
+from itertools import \
+    cycle,\
+    islice
+    
 from toolz import \
     partitionby,\
     thread_first,\
@@ -504,3 +508,14 @@ def split_on_newlines(string):
         return string.split('\r')
     else:
         return string.split('\n')
+    
+# List a -> Int -> List a
+def takecycle(elements, n):
+    """ Return first n elements of infinite cycle given by elements. """
+    return thread_first(elements, cycle, (islice, n), list)    
+
+# Int -> Int -> 2D Array Int
+def checker(rows, cols):
+    """ Produce a checkerboard matrix of zeros and ones of given shape. """
+    first_row = np.array(takecycle([False,True], cols))
+    return np.array(takecycle([first_row, ~first_row], rows)).astype(int)

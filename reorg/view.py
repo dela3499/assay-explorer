@@ -6,26 +6,31 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from IPython.display import display
 import IPython.html.widgets as widgets
+
 from scipy.cluster.hierarchy import \
     linkage,\
     leaves_list,\
     dendrogram
+    
 from IPython.html.widgets import \
     interact,\
     interactive,\
     fixed
+    
 from toolz import \
     pipe,\
     thread_first,\
     curry,\
     frequencies
+    
 from utils import \
     concatenate,\
     snd,\
     filter_rows,\
     unzip,\
     are_all_in,\
-    format_long_line
+    format_long_line,\
+    checker
 
 
 # TODO: many of these functions are quite general and may be move to utils.
@@ -217,7 +222,8 @@ def plot_plate_ticks(matrix,xticks=True):
 def plot_plate_text(i,j,text,format_string='%s'):
     plt.text(j,i,format_string % text,
              horizontalalignment='center',
-             verticalalignment='center')    
+             verticalalignment='center',
+             fontsize = 8)    
     
 # DataFrame -> String -> {color:String, show:String, xticks?:Boolean, vmin: Float, vmax: Float} -> SideEffects
 def plot_plate(dataframe, parameter, config):
@@ -227,12 +233,22 @@ def plot_plate(dataframe, parameter, config):
     conditions = data['Condition'].values
     matrix, missing_coords = to_plate_layout(coords, values)
     
-    plt.imshow(matrix,
-               interpolation = 'nearest',
-               cmap = config['color'],
-               aspect = 'auto',
-               vmin = config['vmin'], 
-               vmax = config['vmax']);
+    if config['color'] == None:
+        plt.imshow(
+            checker(*matrix.shape) & ~np.isnan(matrix),
+            interpolation = 'nearest',
+            cmap = 'Greys',
+            aspect = 'auto',
+            vmin = 0, 
+            vmax = 6);
+    else:
+        plt.imshow(
+            matrix,
+            interpolation = 'nearest',
+            cmap = config['color'],
+            aspect = 'auto',
+            vmin = config['vmin'], 
+            vmax = config['vmax']);
     
     plot_plate_ticks(matrix,xticks=config['xticks?'])
     
