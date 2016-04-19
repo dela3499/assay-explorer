@@ -1,0 +1,8 @@
+ipython notebook
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+toolz
+arrow
