@@ -1,4 +1,5 @@
-ipython notebook
+ipython==3.2.1
+notebook
 numpy
 scipy
 pandas
