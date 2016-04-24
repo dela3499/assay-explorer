@@ -1,36 +1,24 @@
-import pandas as pd
+try:
+   from cStringIO import  StringIO
+except Exception as e:
+   from io import BytesIO as StringIO
+from toolz import thread_first, thread_last, juxt, curry
+
 import numpy as np
-
-from toolz import \
-    thread_first,\
-    thread_last,\
-    juxt,\
-    curry
+import pandas as pd
+from pandas import DataFrame as df    
     
-from utils import \
-    curry_funcs,\
-    identity,\
-    map,\
-    drop_matching_columns,\
-    add_normalized_columns,\
-    generate_sid,\
-    mapdict,\
-    tail,\
-    from_file
+from utils import (curry_funcs, identity, map, drop_matching_columns, mapdict,
+                  add_normalized_columns, generate_sid, tail, from_file)
     
-from cStringIO import \
-    StringIO
 
-from pandas import \
-    DataFrame as df    
-            
 curry_funcs(['pd.read_csv',
              'df.dropna',
              'df.rename'])
 
 def create_well_df(cell_dict):
     return thread_last(cell_dict,
-                       (mapdict,lambda k,v: {"Cell Type":k,"Well Name":v}),
+                       (mapdict,lambda k,v: {"Cell Type":k, "Well Name":v}),
                        (map, df),
                        pd.concat)
 
