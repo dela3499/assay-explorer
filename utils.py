@@ -1,31 +1,22 @@
-import pandas as pd
-import numpy as np
-import arrow
-import locale
-import json
-import uuid
 import re
 import os
+import json
+import uuid
+import locale
+from collections import OrderedDict
+try:
+    from StringIO import StringIO
+except Exception as e:
+    from io import StringIO
+    
+from itertools import cycle, islice
+    
+from toolz import partitionby, thread_first, thread_last, curry, assoc 
+import numpy as np
+import pandas as pd
+from pandas import DataFrame as df
+import arrow
 
-from StringIO import \
-    StringIO
-    
-from itertools import \
-    cycle,\
-    islice
-    
-from toolz import \
-    partitionby,\
-    thread_first,\
-    thread_last,\
-    curry,\
-    assoc
-    
-from collections import \
-    OrderedDict
-    
-from pandas import \
-    DataFrame as df
 
 # String -> Boolean
 def string_is_empty(string):
@@ -102,10 +93,10 @@ def df_difference(a,b):
 def curry_funcs(funcs):
     """ Curry each function in provided list. """
     for func in funcs:
-      try: 
-        exec('global {}; {} = curry({})'.format(*[func]*3))
-      except:
-        exec('{} = curry({})'.format(*[func]*2))
+        try: 
+            exec('global {}; {} = curry({})'.format(*[func]*3))
+        except:
+            exec('{} = curry({})'.format(*[func]*2))
 
 # a -> (a -> [b] -> a) -> [[b]] -> a
 def thread_first_repeat(x,f,args):
