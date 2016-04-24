@@ -1,37 +1,22 @@
+import re
+from toolz import pipe, thread_first, curry, frequencies
+
+import numpy as np
+
 import pandas as pd
 from pandas import DataFrame as DF
-import re
-import numpy as np
+
+from scipy.cluster.hierarchy import linkage, leaves_list, dendrogram
+
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
 from IPython.display import display
 import IPython.html.widgets as widgets
+from IPython.html.widgets import interact, interactive, fixed
 
-from scipy.cluster.hierarchy import \
-    linkage,\
-    leaves_list,\
-    dendrogram
-    
-from IPython.html.widgets import \
-    interact,\
-    interactive,\
-    fixed
-    
-from toolz import \
-    pipe,\
-    thread_first,\
-    curry,\
-    frequencies
-    
-from utils import \
-    concatenate,\
-    snd,\
-    filter_rows,\
-    unzip,\
-    are_all_in,\
-    format_long_line,\
-    checker
-
+from utils import (concatenate, snd, filter_rows, unzip, are_all_in,
+                   format_long_line,checker)
 
 # TODO: many of these functions are quite general and may be move to utils.
 # TODO: some of these function can be removed, or added to some other smaller, more specific utils thing. Or maybe just moved to the bottom of this file. 
