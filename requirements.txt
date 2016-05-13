@@ -1,0 +1,10 @@
+ipython==3.2.1
+notebook
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+toolz
+arrow
+ipywidgets
